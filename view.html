@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <title>Handelsreizigersprobleem</title>
+        <link href="style.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="center">
+            <div class="horizontal">
+                <canvas id="Viewport">Looks like your browser doesn't support the html5 canvas; quite a shame, really</canvas>
+                <div class="vertical">
+                    <div id="Length"></div>
+                    <div id="Time"></div>
+                    <div id="AverageTime"></div> 
+                </div>
+            </div>
+            <div class="horizontal">
+                <div class="vertical">
+                    Algoritme:
+                    <select id="Picker"></select>
+                </div>
+                <div class="vertical">
+                    Aantal punten:
+                    <input id="Count" type="number" value="20">
+                </div>
+                <div class="vertical">
+                    <button id="Calculate">Bereken de kortste route</button>
+                </div>
+            </div>
+        </div>
+        <script src="packed.js"> </script>
+    </body>
+</html>

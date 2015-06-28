@@ -160,6 +160,43 @@ var TSP;
 (function (TSP) {
     var Heuristics;
     (function (Heuristics) {
+        function Nearest(vertices, dimensions) {
+            function findNearest(vertex, remainingVertices) {
+                var lengths = remainingVertices.map(function (match) {
+                    var matchVector = TSP.Vector.fromPoint(match);
+                    var basis = TSP.Vector.fromPoint(vertex);
+                    return basis.to(matchVector).lengthSquared;
+                });
+                var maxLength = Math.max.apply(null, lengths);
+                var index = lengths.indexOf(maxLength);
+                return remainingVertices[index];
+            }
+            if (vertices.length < 3) {
+                return new TSP.Path(vertices);
+            }
+            var result = [];
+            var current = vertices[0];
+            var remaining = vertices.slice(1);
+            result.push(current);
+            while (remaining.length !== 0) {
+                var nearest = findNearest(current, remaining);
+                if (nearest === null) {
+                    break;
+                }
+                result.push(nearest);
+                current = nearest;
+                remaining = TSP.remove(remaining, nearest);
+            }
+            return new TSP.Path(result);
+        }
+        Heuristics.Nearest = Nearest;
+    })(Heuristics = TSP.Heuristics || (TSP.Heuristics = {}));
+})(TSP || (TSP = {}));
+/// <reference path="./../common.ts"/>
+var TSP;
+(function (TSP) {
+    var Heuristics;
+    (function (Heuristics) {
         function Radius(vertices, dimensions) {
             function findNearest(vertex, remainingVertices) {
                 var start = 1;
@@ -223,6 +260,7 @@ var TSP;
 })(TSP || (TSP = {}));
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
+/// <reference path="./src/variants/nn.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/variants/random.ts"/>
 var TSP;

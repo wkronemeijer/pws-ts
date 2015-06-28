@@ -1,6 +1,7 @@
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
 
+/// <reference path="./src/variants/nn.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/variants/random.ts"/>
 

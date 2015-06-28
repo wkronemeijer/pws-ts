@@ -167,8 +167,8 @@ var TSP;
                     var basis = TSP.Vector.fromPoint(vertex);
                     return basis.to(matchVector).lengthSquared;
                 });
-                var maxLength = Math.max.apply(null, lengths);
-                var index = lengths.indexOf(maxLength);
+                var minLength = Math.min.apply(null, lengths);
+                var index = lengths.indexOf(minLength);
                 return remainingVertices[index];
             }
             if (vertices.length < 3) {
@@ -221,8 +221,8 @@ var TSP;
                     var basis = TSP.Vector.fromPoint(vertex);
                     return basis.to(matchVector).lengthSquared;
                 });
-                var maxLength = Math.max.apply(null, lengths);
-                var index = lengths.indexOf(maxLength);
+                var minLength = Math.min.apply(null, lengths);
+                var index = lengths.indexOf(minLength);
                 return matches[index];
             }
             if (vertices.length < 3) {

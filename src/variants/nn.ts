@@ -10,8 +10,8 @@ module TSP {
                     
                     return basis.to(matchVector).lengthSquared
                 })
-                let maxLength = Math.max.apply(null, lengths)
-                let index = lengths.indexOf(maxLength)
+                let minLength = Math.min.apply(null, lengths)
+                let index = lengths.indexOf(minLength)
                 
                 return remainingVertices[index]
             }

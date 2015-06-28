@@ -5,7 +5,7 @@ module TSP {
         export function Radius(vertices: Point[], dimensions: Size) {
             function findNearest(vertex: Point, remainingVertices: Point[]): Point {
                 let start = 1
-                let stop = Math.max(dimensions.width, dimensions.height)
+                let stop = 2 * Math.max(dimensions.width, dimensions.height)
                 let step = stop / 10
                 
                 var radius = start
@@ -44,11 +44,12 @@ module TSP {
             var current = vertices[0]
             var remaining = vertices.slice(1)
             
+            result.push(current)
             while (remaining.length !== 0) {
-                result.push(current)
-                
                 let nearest = findNearest(current, remaining)
                 if (nearest === null) {break}
+                
+                result.push(nearest)
                 
                 current = nearest
                 remaining = remove(remaining, nearest)

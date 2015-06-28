@@ -163,7 +163,7 @@ var TSP;
         function Radius(vertices, dimensions) {
             function findNearest(vertex, remainingVertices) {
                 var start = 1;
-                var stop = Math.max(dimensions.width, dimensions.height);
+                var stop = 2 * Math.max(dimensions.width, dimensions.height);
                 var step = stop / 10;
                 var radius = start;
                 var matches = [];
@@ -176,6 +176,7 @@ var TSP;
                     });
                     radius += step;
                     if (radius >= stop) {
+                        console.log(radius, stop);
                         return null;
                     }
                 }
@@ -194,14 +195,18 @@ var TSP;
             var result = [];
             var current = vertices[0];
             var remaining = vertices.slice(1);
+            result.push(current);
             while (remaining.length !== 0) {
-                result.push(current);
                 var nearest = findNearest(current, remaining);
                 if (nearest === null) {
                     break;
                 }
+                result.push(nearest);
                 current = nearest;
                 remaining = TSP.remove(remaining, nearest);
+            }
+            if (result.length < vertices.length) {
+                debugger;
             }
             return new TSP.Path(result);
         }

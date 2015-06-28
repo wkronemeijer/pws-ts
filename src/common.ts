@@ -18,8 +18,16 @@ module TSP {
                               target.y - base.y)
         }
         
-        get lengthSquared(): number {return Math.pow(this.x, 2) + Math.pow(this.y, 2)}
-        get length(): number        {return Math.sqrt(this.lengthSquared)}
+        get lengthSquared(): number {
+            let x = this.x
+            let y = this.y
+            
+            return x*x + y*y
+        }
+        
+        get length(): number {
+            return Math.sqrt(this.lengthSquared)
+        }
         
         to(target: Vector): Vector {
             return Vector.relative(this, target)

@@ -32,12 +32,18 @@ var TSP;
             return new Vector(target.x - base.x, target.y - base.y);
         };
         Object.defineProperty(Vector.prototype, "lengthSquared", {
-            get: function () { return Math.pow(this.x, 2) + Math.pow(this.y, 2); },
+            get: function () {
+                var x = this.x;
+                var y = this.y;
+                return x * x + y * y;
+            },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Vector.prototype, "length", {
-            get: function () { return Math.sqrt(this.lengthSquared); },
+            get: function () {
+                return Math.sqrt(this.lengthSquared);
+            },
             enumerable: true,
             configurable: true
         });

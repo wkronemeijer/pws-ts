@@ -41,9 +41,10 @@ module TSP {
         contains(p: Point) {
             let center = Vector.fromPoint(this.center)
             let point = Vector.fromPoint(p)
+            let radius = this.radius
             
             let relative = center.to(point)
-            let radiusSquared = Math.pow(this.radius, 2)
+            let radiusSquared = radius * radius
             
             return relative.lengthSquared < radiusSquared
         }

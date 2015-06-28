@@ -62,8 +62,9 @@ var TSP;
         Circle.prototype.contains = function (p) {
             var center = Vector.fromPoint(this.center);
             var point = Vector.fromPoint(p);
+            var radius = this.radius;
             var relative = center.to(point);
-            var radiusSquared = Math.pow(this.radius, 2);
+            var radiusSquared = radius * radius;
             return relative.lengthSquared < radiusSquared;
         };
         return Circle;

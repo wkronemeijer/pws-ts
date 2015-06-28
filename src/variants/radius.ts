@@ -2,14 +2,14 @@
 
 module TSP {
     export module Heuristics {
-        export function Radius(vertices: Point[], dimensions: Size) {
-            function findNearest(vertex: Point, remainingVertices: Point[]): Point {
+        export function Radius(vertices: Vector[], dimensions: Size) {
+            function findNearest(vertex: Vector, remainingVertices: Vector[]): Vector {
                 let start = 1
                 let stop = 2 * Math.max(dimensions.width, dimensions.height)
                 let step = stop / 10
                 
                 var radius = start
-                let matches: Point[] = []
+                let matches: Vector[] = []
                 
                 while (matches.length === 0) {
                     var circle = new Circle(vertex, radius)
@@ -24,12 +24,7 @@ module TSP {
                 }
                 
                 // All lengths are actually lengthSquared; easier to type
-                let lengths = matches.map((match: Point) => {
-                    let matchVector = Vector.fromPoint(match)
-                    let basis = Vector.fromPoint(vertex)  // i.e. what is being searched for, for lack of a better term
-                    
-                    return basis.to(matchVector).lengthSquared
-                })
+                let lengths = matches.map((match: Vector) => vertex.to(match).lengthSquared)
                 let minLength = Math.min.apply(null, lengths)
                 let index = lengths.indexOf(minLength)
                 
@@ -40,7 +35,7 @@ module TSP {
                 return new Path(vertices)
             }
             
-            let result: Point[] = []
+            let result: Vector[] = []
             var current = vertices[0]
             var remaining = vertices.slice(1)
             

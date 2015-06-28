@@ -1,17 +1,6 @@
 module TSP {
-    export class Point {
+    export class Vector {
         constructor(public x: number, public y: number) {Object.freeze(this)}
-    }
-    
-    
-    export class Vector extends Point{
-        static fromPoint(p: Point): Vector {
-            if (p instanceof Vector) {
-                return p
-            } else {
-                return new Vector(p.x, p.y)
-            }
-        }
         
         static relative(base: Vector, target: Vector): Vector {
             return new Vector(target.x - base.x, 
@@ -36,11 +25,10 @@ module TSP {
     
     
     export class Circle {
-        constructor(public center: Point, public radius: number) {Object.freeze(this)}
+        constructor(public center: Vector, public radius: number) {Object.freeze(this)}
         
-        contains(p: Point) {
-            let center = Vector.fromPoint(this.center)
-            let point = Vector.fromPoint(p)
+        contains(point: Vector) {
+            let center = this.center
             let radius = this.radius
             
             let relative = center.to(point)
@@ -57,7 +45,7 @@ module TSP {
     
     
     export class Path {
-        constructor(public vertices: Point[]) {
+        constructor(public vertices: Vector[]) {
             Object.freeze(this.vertices)
             Object.freeze(this)
         }
@@ -67,7 +55,7 @@ module TSP {
             let verticesAccumulator = new Array(count)
             
             for (var index = 0; index < count; index++ ) {
-                verticesAccumulator[index] = new Point(random() * range.width, random() * range.height)
+                verticesAccumulator[index] = new Vector(random() * range.width, random() * range.height)
             }
             
             return new Path(verticesAccumulator)
@@ -79,10 +67,8 @@ module TSP {
             
             this.vertices.forEach((vertex, index) => {
                 if (index + 1 < length) {
-                    let current = Vector.fromPoint(vertex)
-                    let next = Vector.fromPoint(this.vertices[index + 1])
-                    
-                    lengthAccumulator += current.to(next).length
+                    let next = this.vertices[index + 1]
+                    lengthAccumulator += vertex.to(next).length
                 }
             })
             return lengthAccumulator

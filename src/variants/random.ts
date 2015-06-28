@@ -2,7 +2,7 @@
 
 module TSP {
     export module Heuristics {
-        export function Random(xy_vertices: Point[], dimensions: Size) {
+        export function Random(xy_vertices: Vector[], dimensions: Size) {
             let length = xy_vertices.length
             
             /*

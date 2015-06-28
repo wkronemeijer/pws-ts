@@ -50,7 +50,7 @@ module TSP {
         
         
         canvas.addEventListener('click', (event) => {
-            console.log("Click:", new Point(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop))
+            console.log("Click:", new Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop))
         })
         
         

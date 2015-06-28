@@ -1,33 +1,11 @@
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
 var TSP;
 (function (TSP) {
-    var Point = (function () {
-        function Point(x, y) {
+    var Vector = (function () {
+        function Vector(x, y) {
             this.x = x;
             this.y = y;
             Object.freeze(this);
         }
-        return Point;
-    })();
-    TSP.Point = Point;
-    var Vector = (function (_super) {
-        __extends(Vector, _super);
-        function Vector() {
-            _super.apply(this, arguments);
-        }
-        Vector.fromPoint = function (p) {
-            if (p instanceof Vector) {
-                return p;
-            }
-            else {
-                return new Vector(p.x, p.y);
-            }
-        };
         Vector.relative = function (base, target) {
             return new Vector(target.x - base.x, target.y - base.y);
         };
@@ -51,7 +29,7 @@ var TSP;
             return Vector.relative(this, target);
         };
         return Vector;
-    })(Point);
+    })();
     TSP.Vector = Vector;
     var Circle = (function () {
         function Circle(center, radius) {
@@ -59,9 +37,8 @@ var TSP;
             this.radius = radius;
             Object.freeze(this);
         }
-        Circle.prototype.contains = function (p) {
-            var center = Vector.fromPoint(this.center);
-            var point = Vector.fromPoint(p);
+        Circle.prototype.contains = function (point) {
+            var center = this.center;
             var radius = this.radius;
             var relative = center.to(point);
             var radiusSquared = radius * radius;
@@ -89,7 +66,7 @@ var TSP;
             var random = Math.random;
             var verticesAccumulator = new Array(count);
             for (var index = 0; index < count; index++) {
-                verticesAccumulator[index] = new Point(random() * range.width, random() * range.height);
+                verticesAccumulator[index] = new Vector(random() * range.width, random() * range.height);
             }
             return new Path(verticesAccumulator);
         };
@@ -100,9 +77,8 @@ var TSP;
                 var length = this.vertices.length;
                 this.vertices.forEach(function (vertex, index) {
                     if (index + 1 < length) {
-                        var current = Vector.fromPoint(vertex);
-                        var next = Vector.fromPoint(_this.vertices[index + 1]);
-                        lengthAccumulator += current.to(next).length;
+                        var next = _this.vertices[index + 1];
+                        lengthAccumulator += vertex.to(next).length;
                     }
                 });
                 return lengthAccumulator;
@@ -169,11 +145,7 @@ var TSP;
     (function (Heuristics) {
         function Nearest(vertices, dimensions) {
             function findNearest(vertex, remainingVertices) {
-                var lengths = remainingVertices.map(function (match) {
-                    var matchVector = TSP.Vector.fromPoint(match);
-                    var basis = TSP.Vector.fromPoint(vertex);
-                    return basis.to(matchVector).lengthSquared;
-                });
+                var lengths = remainingVertices.map(function (match) { return vertex.to(match).lengthSquared; });
                 var minLength = Math.min.apply(null, lengths);
                 var index = lengths.indexOf(minLength);
                 return remainingVertices[index];
@@ -223,11 +195,7 @@ var TSP;
                         return null;
                     }
                 }
-                var lengths = matches.map(function (match) {
-                    var matchVector = TSP.Vector.fromPoint(match);
-                    var basis = TSP.Vector.fromPoint(vertex);
-                    return basis.to(matchVector).lengthSquared;
-                });
+                var lengths = matches.map(function (match) { return vertex.to(match).lengthSquared; });
                 var minLength = Math.min.apply(null, lengths);
                 var index = lengths.indexOf(minLength);
                 return matches[index];
@@ -291,7 +259,7 @@ var TSP;
         params.picker.addEventListener('change', deleteTimings);
         params.count.addEventListener('change', deleteTimings);
         canvas.addEventListener('click', function (event) {
-            console.log("Click:", new TSP.Point(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
+            console.log("Click:", new TSP.Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
         });
         params.calculate.addEventListener('click', function (event) {
             var user_count = params.count.valueAsNumber;

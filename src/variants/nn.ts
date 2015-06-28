@@ -2,14 +2,9 @@
 
 module TSP {
     export module Heuristics {
-        export function Nearest(vertices: Point[], dimensions: Size) {
-            function findNearest(vertex: Point, remainingVertices: Point[]): Point {
-                let lengths = remainingVertices.map((match: Point) => {
-                    let matchVector = Vector.fromPoint(match)
-                    let basis = Vector.fromPoint(vertex)  // i.e. what is being searched for, for lack of a better term
-                    
-                    return basis.to(matchVector).lengthSquared
-                })
+        export function Nearest(vertices: Vector[], dimensions: Size) {
+            function findNearest(vertex: Vector, remainingVertices: Vector[]): Vector {
+                let lengths = remainingVertices.map((match: Vector) => vertex.to(match).lengthSquared)
                 let minLength = Math.min.apply(null, lengths)
                 let index = lengths.indexOf(minLength)
                 
@@ -20,7 +15,7 @@ module TSP {
                 return new Path(vertices)
             }
             
-            let result: Point[] = []
+            let result: Vector[] = []
             var current = vertices[0]
             var remaining = vertices.slice(1)
             

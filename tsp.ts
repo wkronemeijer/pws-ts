@@ -74,9 +74,9 @@ module TSP {
             display(shortest_path, context, params.dimensions)
             
             let info = params.infoPanel
-            info.length.innerText      = "Lengte: "         + Math.round(shortest_path.length).toString() +    "\n"
-            info.time.innerText        = "Tijd: "           + dt.toString()                               + "ms \n"
-            info.averageTime.innerText = "Gemiddelde tijd: "+ Math.round(average(timings)).toString()     + "ms \n"
+            info.length.innerText      = "Lengte: "         + Math.round(shortest_path.length).toString() +      "\n"
+            info.time.innerText        = "Tijd: "           + dt.toString()                               + "ms \n\n"
+            info.averageTime.innerText = "Gemiddelde tijd: "+ Math.round(average(timings)).toString()     + "ms   \n"
         }, false)
     }
 }

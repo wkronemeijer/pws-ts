@@ -176,7 +176,6 @@ var TSP;
                     });
                     radius += step;
                     if (radius >= stop) {
-                        console.log(radius, stop);
                         return null;
                     }
                 }
@@ -204,9 +203,6 @@ var TSP;
                 result.push(nearest);
                 current = nearest;
                 remaining = TSP.remove(remaining, nearest);
-            }
-            if (result.length < vertices.length) {
-                debugger;
             }
             return new TSP.Path(result);
         }
@@ -269,8 +265,8 @@ var TSP;
             TSP.display(shortest_path, context, params.dimensions);
             var info = params.infoPanel;
             info.length.innerText = "Lengte: " + Math.round(shortest_path.length).toString() + "\n";
-            info.time.innerText = "Tijd: " + dt.toString() + "ms \n";
-            info.averageTime.innerText = "Gemiddelde tijd: " + Math.round(TSP.average(timings)).toString() + "ms \n";
+            info.time.innerText = "Tijd: " + dt.toString() + "ms \n\n";
+            info.averageTime.innerText = "Gemiddelde tijd: " + Math.round(TSP.average(timings)).toString() + "ms   \n";
         }, false);
     }
     TSP.init = init;

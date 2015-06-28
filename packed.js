@@ -299,7 +299,7 @@ var TSP;
             if (isNaN(user_count)) {
                 return;
             }
-            var clamped_count = Math.min(Math.max(2, user_count), 1000);
+            var clamped_count = Math.min(Math.max(5, user_count), 1000);
             params.count.value = clamped_count.toString();
             var random_path = TSP.Path.random(clamped_count, params.dimensions);
             var before = Date.now();

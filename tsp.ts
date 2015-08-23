@@ -26,7 +26,8 @@ module TSP {
         let context = <CanvasRenderingContext2D>canvas.getContext('2d')
         let timings: number[] = []
         
-        canvas.width = dimensions.width
+        
+        canvas.width  = dimensions.width
         canvas.height = dimensions.height
 
 
@@ -48,7 +49,12 @@ module TSP {
         
         
         canvas.addEventListener('click', (event) => {
-            console.log("Click:", new Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop))
+            let location = new Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop)
+            
+            
+            
+            
+            
         })
         
         
@@ -60,17 +66,17 @@ module TSP {
                 return
             }
             
-            let clamped_count = Math.min(Math.max(5, user_count), 1000)
+            let clamped_count = Math.min(Math.max(5, user_count), 500)
             count.value = clamped_count.toString()
             
-            let random_vertices = TSP.Path.random(clamped_count)
+            let random_vertices = Path.random(clamped_count)
             let algorithm       = Heuristics.filter(algo => algo.name === algorithm_name)[0]
             
             let result = performTest(algorithm, random_vertices)
             
             timings.push(result.time)
             
-            display(result.path, context, params.dimensions)
+            display(result.path, context, dimensions)
             
             let info = params.infoPanel
             info.length.innerText      = "Lengte: "          + Math.round(result.path.length).toString() +      "\n"
@@ -81,13 +87,13 @@ module TSP {
 }
 
 TSP.run({
-    dimensions: new TSP.Size(500, 500),
+    dimensions: new TSP.Size(100, 100),
     canvas: <HTMLCanvasElement>document.getElementById('Viewport'),
     picker: <HTMLSelectElement>document.getElementById('Picker'),
-    count: <HTMLInputElement>document.getElementById('Count'),
+    count:  <HTMLInputElement> document.getElementById('Count'),
     infoPanel: {
-        length: <HTMLDivElement>document.getElementById('Length'),
-        time: <HTMLDivElement>document.getElementById('Time'),
+        length:      <HTMLDivElement>document.getElementById('Length'),
+        time:        <HTMLDivElement>document.getElementById('Time'),
         averageTime: <HTMLDivElement>document.getElementById('AverageTime')
     },
     calculate: <HTMLButtonElement>document.getElementById('Calculate')

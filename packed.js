@@ -99,7 +99,7 @@ var TSP;
         };
     }
     TSP.performTest = performTest;
-    TSP.Algorithms = [];
+    TSP.Heuristics = [];
     function removeFrom(array, item) {
         var index = array.indexOf(item);
         if (index !== -1) {
@@ -152,7 +152,7 @@ var TSP;
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
-    TSP.Algorithms.push({
+    TSP.Heuristics.push({
         name: "Nearest Neighbour",
         solve: function (vertices) {
             function findNearest(vertex, remainingVertices) {
@@ -184,7 +184,7 @@ var TSP;
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
-    TSP.Algorithms.push({
+    TSP.Heuristics.push({
         name: "Radius",
         solve: function (vertices) {
             function findNearest(vertex, remainingVertices) {
@@ -233,7 +233,7 @@ var TSP;
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
-    TSP.Algorithms.push({
+    TSP.Heuristics.push({
         name: "Random",
         solve: function (xy_vertices) {
             return TSP.Path.random(xy_vertices.length);
@@ -251,6 +251,7 @@ var TSP;
         var canvas = params.canvas, dimensions = params.dimensions, picker = params.picker, count = params.count, calculate = params.calculate;
         var context = canvas.getContext('2d');
         var timings = [];
+        window["falafal"] = context;
         canvas.width = dimensions.width;
         canvas.height = dimensions.height;
         function addOptionByName(name) {
@@ -258,14 +259,14 @@ var TSP;
             option.innerText = name;
             picker.appendChild(option);
         }
-        TSP.Algorithms.forEach(function (algorithm) {
+        TSP.Heuristics.forEach(function (algorithm) {
             addOptionByName(algorithm.name);
         });
         function deleteTimings() { timings.splice(0, timings.length); }
         picker.addEventListener('change', deleteTimings);
         count.addEventListener('change', deleteTimings);
         canvas.addEventListener('click', function (event) {
-            console.log("Click:", new TSP.Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
+            var location = new TSP.Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop);
         });
         calculate.addEventListener('click', function (event) {
             var user_count = count.valueAsNumber;
@@ -273,13 +274,13 @@ var TSP;
             if (isNaN(user_count)) {
                 return;
             }
-            var clamped_count = Math.min(Math.max(5, user_count), 1000);
+            var clamped_count = Math.min(Math.max(5, user_count), 500);
             count.value = clamped_count.toString();
             var random_vertices = TSP.Path.random(clamped_count);
-            var algorithm = TSP.Algorithms.filter(function (algo) { return algo.name === algorithm_name; })[0];
+            var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === algorithm_name; })[0];
             var result = TSP.performTest(algorithm, random_vertices);
             timings.push(result.time);
-            TSP.display(result.path, context, params.dimensions);
+            TSP.display(result.path, context, dimensions);
             var info = params.infoPanel;
             info.length.innerText = "Lengte: " + Math.round(result.path.length).toString() + "\n";
             info.time.innerText = "Tijd: " + result.time.toString() + "ms \n\n";
@@ -289,7 +290,7 @@ var TSP;
     TSP.run = run;
 })(TSP || (TSP = {}));
 TSP.run({
-    dimensions: new TSP.Size(500, 500),
+    dimensions: new TSP.Size(100, 100),
     canvas: document.getElementById('Viewport'),
     picker: document.getElementById('Picker'),
     count: document.getElementById('Count'),
@@ -300,4 +301,42 @@ TSP.run({
     },
     calculate: document.getElementById('Calculate')
 });
+/// <reference path="./common.ts"/>
+var TSP;
+(function (TSP) {
+    "use strict";
+    var storageKey = "willy2k16";
+    var PortController = (function () {
+        function PortController(params) {
+            var fileInput = params.fileInput, importButton = params.importButton, exportButton = params.exportButton, fiddleArea = params.fiddleArea;
+            this.fileInput = fileInput;
+            this.importButton = importButton;
+            this.exportButton = exportButton;
+            this.fiddleArea = fiddleArea;
+            this.vertices = null;
+            Object.seal(this);
+        }
+        PortController.prototype.saveContent = function () {
+            localStorage.setItem(storageKey, this.fiddleArea.innerText);
+        };
+        PortController.prototype.loadContent = function () {
+            var stored = localStorage.getItem(storageKey);
+            if (stored !== null) {
+                this.fiddleArea.value = stored;
+            }
+        };
+        PortController.prototype.importContentFromFile = function () {
+            var _this = this;
+            var file = this.fileInput.files[0];
+            var reader = new FileReader();
+            reader.readAsText(file);
+            reader.addEventListener('loadend', function (event) {
+                var json_text = reader.result;
+                _this.fiddleArea.innerText = json_text;
+            }, false);
+        };
+        return PortController;
+    })();
+    TSP.PortController = PortController;
+})(TSP || (TSP = {}));
 //# sourceMappingURL=packed.js.map

@@ -5,8 +5,10 @@ module TSP {
         }
         
         static relative(base: Vector, target: Vector): Vector {
-            return new Vector(target.x - base.x, 
-                              target.y - base.y)
+            let dx = target.x - base.x
+            let dy = target.y - base.y
+            
+            return new Vector(dx, dy)
         }
         
         get lengthSquared(): number {
@@ -81,20 +83,17 @@ module TSP {
     }
     
     
-    export interface TestResult {
-        /**Algorithm used */
-        algorithm: TSPAlgorithm
-        /**Ordered vertices */
-        path: Path
-        /** Time in ms */
-        time: number 
-    }
-    
     export interface TSPAlgorithm {
         name: string
         solve(vertices: Vector[]): Vector[]
     }
     
+    
+    export interface TestResult {
+        algorithm: TSPAlgorithm
+        path: Path
+        time: number 
+    }
     
     
     export function performTest(algo: TSPAlgorithm, vertices: Vector[]): TestResult {
@@ -109,8 +108,22 @@ module TSP {
         }
     }
     
-    // Place for extensions to .push new algorithms 
+    /** Place for extensions to .push() new algorithms */
     export let Heuristics: TSPAlgorithm[] = []
+    
+    
+    let nestedFromJSON = (json: string) => <number[][]> JSON.parse(json)
+    
+    let verticesFromNested = (nested_array: number[][]) => nested_array.map(([x,y]) => {
+            if (x !== undefined && y !== undefined) {
+                return new Vector(x, y)
+            } else {
+                return null
+            }
+        }).filter(perhaps => perhaps !== null)
+    
+    /**Throws SyntaxError if the input was malformed */
+    export let verticesFromJSON = (json: string) => verticesFromNested(nestedFromJSON(json))
     
     
     export function removeFrom<T>(array: T[], item: T): Array<T> {

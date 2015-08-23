@@ -8,11 +8,26 @@
             <div class="horizontal">
                 <canvas id="Viewport">Looks like your browser doesn't support the html5 canvas; quite a shame, really</canvas>
                 <div class="vertical">
+                    <div class="horizontal">
+                        <input type="file">
+                        <button>Import</button>
+                    </div>
+                    <div class="vertical">
+                        <textarea cols="40" rows="20">
+                        </textarea>
+                        <div id="InputError"></div>
+                    </div>
+                    <div class="horizontal">
+                        <button>Update</button>
+                        <button>Export</button>
+                    </div>
+                </div>
+            </div>
+            <div class="vertical">
                     <div id="Length"></div>
                     <div id="Time"></div>
                     <div id="AverageTime"></div> 
                 </div>
-            </div>
             <div class="horizontal">
                 <div class="vertical">
                     Algoritme:
@@ -25,9 +40,7 @@
                 <div class="vertical">
                     <button id="Calculate">Bereken de kortste route</button>
                 </div>
-                <div>
-                    <input type="file">
-                </div>
+                
             </div>
         </div>
         <script src="packed.js"> </script>

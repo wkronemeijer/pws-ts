@@ -22,3 +22,18 @@ body {
 button {
     margin: 0px;
 }
+
+textarea {
+    font-family: monospace;
+}
+
+
+#Viewport {
+    width: 100px;
+    height: 100px;
+}
+
+#InputError {
+    color: red;
+    font-weight: bold;
+}

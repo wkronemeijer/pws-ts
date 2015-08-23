@@ -1,8 +1,8 @@
 /// <reference path="./../common.ts"/>
 
 module TSP {
-    Algorithms.push({
-        name: "Nearest",
+    Heuristics.push({
+        name: "Nearest Neighbour",
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, remainingVertices: Vector[]): Vector {
                 let lengths = remainingVertices.map((match: Vector) => vertex.to(match).lengthSquared)

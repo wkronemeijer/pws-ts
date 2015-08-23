@@ -36,7 +36,7 @@ module TSP {
             picker.appendChild(option)
         }
 
-        TSP.Algorithms.forEach(algorithm => {
+        TSP.Heuristics.forEach(algorithm => {
             addOptionByName(algorithm.name)
         })
         
@@ -64,7 +64,7 @@ module TSP {
             count.value = clamped_count.toString()
             
             let random_vertices = TSP.Path.random(clamped_count)
-            let algorithm       = Algorithms.filter(algo => algo.name === algorithm_name)[0]
+            let algorithm       = Heuristics.filter(algo => algo.name === algorithm_name)[0]
             
             let result = performTest(algorithm, random_vertices)
             

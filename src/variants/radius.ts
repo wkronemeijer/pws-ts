@@ -1,7 +1,7 @@
 /// <reference path="./../common.ts"/>
 
 module TSP {
-    Algorithms.push({
+    Heuristics.push({
         name: "Radius",
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, remainingVertices: Vector[]): Vector {

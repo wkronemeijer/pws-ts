@@ -153,7 +153,7 @@ var TSP;
 var TSP;
 (function (TSP) {
     TSP.Algorithms.push({
-        name: "Nearest",
+        name: "Nearest Neighbour",
         solve: function (vertices) {
             function findNearest(vertex, remainingVertices) {
                 var lengths = remainingVertices.map(function (match) { return vertex.to(match).lengthSquared; });

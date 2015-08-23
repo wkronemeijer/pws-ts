@@ -110,7 +110,7 @@ module TSP {
     }
     
     // Place for extensions to .push new algorithms 
-    export let Algorithms: TSPAlgorithm[] = []
+    export let Heuristics: TSPAlgorithm[] = []
     
     
     export function removeFrom<T>(array: T[], item: T): Array<T> {

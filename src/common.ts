@@ -1,6 +1,8 @@
 module TSP {
     export class Vector {
-        constructor(public x: number, public y: number) {Object.freeze(this)}
+        constructor(public x: number, public y: number) {
+            Object.freeze(this)
+        }
         
         static relative(base: Vector, target: Vector): Vector {
             return new Vector(target.x - base.x, 
@@ -8,9 +10,7 @@ module TSP {
         }
         
         get lengthSquared(): number {
-            let x = this.x
-            let y = this.y
-            
+            let {x, y} = this
             return x*x + y*y
         }
         
@@ -25,13 +25,14 @@ module TSP {
     
     
     export class Circle {
-        constructor(public center: Vector, public radius: number) {Object.freeze(this)}
+        constructor(public center: Vector, public radius: number) {
+            Object.freeze(this)
+        }
         
         contains(point: Vector) {
-            let center = this.center
-            let radius = this.radius
+            let {center, radius} = this
             
-            let relative = center.to(point)
+            let relative      = center.to(point)
             let radiusSquared = radius * radius
             
             return relative.lengthSquared < radiusSquared
@@ -40,7 +41,11 @@ module TSP {
     
     
     export class Size {
-        constructor(public width: number, public height: number) {Object.freeze(this)}
+        constructor(public width: number, public height: number) {
+            Object.freeze(this)
+        }
+        
+        static default = new Size(100, 100)
     }
     
     
@@ -50,37 +55,66 @@ module TSP {
             Object.freeze(this)
         }
         
-        static random(count: number, range: Size): Path {
+        static random(vertex_count: number): Path {
             let random = Math.random
-            let verticesAccumulator = new Array(count)
+            let verticesAccumulator = new Array(vertex_count)
             
-            for (var index = 0; index < count; index++ ) {
-                verticesAccumulator[index] = new Vector(random() * range.width, random() * range.height)
+            for (var index = 0; index < vertex_count; index++ ) {
+                verticesAccumulator[index] = new Vector(random() * 100, random() * 100)
             }
             
             return new Path(verticesAccumulator)
         }
         
         get length(): number {
-            var lengthAccumulator = 0
+            var accumulator = 0
             var length = this.vertices.length
             
             this.vertices.forEach((vertex, index) => {
                 if (index + 1 < length) {
                     let next = this.vertices[index + 1]
-                    lengthAccumulator += vertex.to(next).length
+                    accumulator += vertex.to(next).length
                 }
             })
-            return lengthAccumulator
+            return accumulator
         }
     }
     
     
-    export function remove<T>(array: T[], item: T): Array<T> {
+    export interface TestResult {
+        /**Algorithm used */
+        algorithm: TSPAlgorithm
+        /**Ordered vertices */
+        path: Path
+        /** Time in ms */
+        time: number 
+    }
+    
+    export interface TSPAlgorithm {
+        name: string
+        solve(vertices: Vector[]): Vector[]
+    }
+    
+    let t: TestResult
+    
+    export function performTest(algo: TSPAlgorithm, vertices: Vector[]): TestResult {
+        let before = Date.now()
+        let solved = algo.solve(vertices)
+        let after = Date.now()
+        
+        return {
+            algorithm: algo,
+            path: new Path(solved),
+            time: after - before
+        }
+    }
+    
+    
+    export function removeFrom<T>(array: T[], item: T): Array<T> {
         let index = array.indexOf(item)
         if (index !== -1) {
             let before = array.slice(0, index)
-            let after = array.slice(index + 1, array.length)
+            let after  = array.slice(index + 1, array.length)
             
             return before.concat(after)
         } else {
@@ -92,12 +126,12 @@ module TSP {
     export function average(array: number[]): number {
         if (array.length > 1) {
             let sum = array.reduce((a, b) => a + b)
-            let n = array.length
+            let n   = array.length
             return sum / n
         } else if (array.length === 1) {
             return array[0]
         } else {
-            return 0
+            return NaN
         }
     }
 }

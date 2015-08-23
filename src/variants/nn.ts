@@ -2,7 +2,7 @@
 
 module TSP {
     export module Heuristics {
-        export function Nearest(vertices: Vector[], dimensions: Size) {
+        export function Nearest(vertices: Vector[]) {
             function findNearest(vertex: Vector, remainingVertices: Vector[]): Vector {
                 let lengths = remainingVertices.map((match: Vector) => vertex.to(match).lengthSquared)
                 let minLength = Math.min.apply(null, lengths)
@@ -27,7 +27,7 @@ module TSP {
                 result.push(nearest)
                 
                 current = nearest
-                remaining = remove(remaining, nearest)
+                remaining = removeFrom(remaining, nearest)
             }
             
             return new Path(result)

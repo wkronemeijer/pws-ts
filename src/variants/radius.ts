@@ -2,10 +2,10 @@
 
 module TSP {
     export module Heuristics {
-        export function Radius(vertices: Vector[], dimensions: Size) {
+        export function Radius(vertices: Vector[]) {
             function findNearest(vertex: Vector, remainingVertices: Vector[]): Vector {
                 let start = 1
-                let stop = 2 * Math.max(dimensions.width, dimensions.height)
+                let stop = 2 * 100
                 let step = stop / 10
                 
                 var radius = start
@@ -47,7 +47,7 @@ module TSP {
                 result.push(nearest)
                 
                 current = nearest
-                remaining = remove(remaining, nearest)
+                remaining = removeFrom(remaining, nearest)
             }
             
             return new Path(result)

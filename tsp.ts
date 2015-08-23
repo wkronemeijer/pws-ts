@@ -63,7 +63,7 @@ module TSP {
             let clamped_count = Math.min(Math.max(5, user_count), 1000)
             params.count.value = clamped_count.toString()
             
-            let random_path = TSP.Path.random(clamped_count, params.dimensions)
+            let random_path = TSP.Path.random(clamped_count)
             
             let before = Date.now()
             let shortest_path = <Path>reverseMap[algorithm_name](random_path.vertices, params.dimensions)

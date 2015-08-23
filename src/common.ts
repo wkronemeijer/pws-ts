@@ -109,10 +109,9 @@ module TSP {
         }
     }
     
+    // Place for extensions to .push new algorithms 
+    export let Algorithms: TSPAlgorithm[] = []
     
-    export function convertToHTML(t: TestResult) {
-        
-    }
     
     export function removeFrom<T>(array: T[], item: T): Array<T> {
         let index = array.indexOf(item)

@@ -63,11 +63,11 @@ var TSP;
         }
         Path.random = function (vertex_count) {
             var random = Math.random;
-            var verticesAccumulator = new Array(vertex_count);
+            var accumulator = new Array(vertex_count);
             for (var index = 0; index < vertex_count; index++) {
-                verticesAccumulator[index] = new Vector(random() * 100, random() * 100);
+                accumulator[index] = new Vector(random() * 100, random() * 100);
             }
-            return new Path(verticesAccumulator);
+            return Object.freeze(accumulator);
         };
         Object.defineProperty(Path.prototype, "length", {
             get: function () {
@@ -88,7 +88,6 @@ var TSP;
         return Path;
     })();
     TSP.Path = Path;
-    var t;
     function performTest(algo, vertices) {
         var before = Date.now();
         var solved = algo.solve(vertices);
@@ -100,6 +99,7 @@ var TSP;
         };
     }
     TSP.performTest = performTest;
+    TSP.Algorithms = [];
     function removeFrom(array, item) {
         var index = array.indexOf(item);
         if (index !== -1) {
@@ -152,9 +152,9 @@ var TSP;
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
-    var Heuristics;
-    (function (Heuristics) {
-        function Nearest(vertices) {
+    TSP.Algorithms.push({
+        name: "Nearest",
+        solve: function (vertices) {
             function findNearest(vertex, remainingVertices) {
                 var lengths = remainingVertices.map(function (match) { return vertex.to(match).lengthSquared; });
                 var minLength = Math.min.apply(null, lengths);
@@ -162,7 +162,7 @@ var TSP;
                 return remainingVertices[index];
             }
             if (vertices.length < 3) {
-                return new TSP.Path(vertices);
+                return vertices;
             }
             var result = [];
             var current = vertices[0];
@@ -177,17 +177,16 @@ var TSP;
                 current = nearest;
                 remaining = TSP.removeFrom(remaining, nearest);
             }
-            return new TSP.Path(result);
+            return result;
         }
-        Heuristics.Nearest = Nearest;
-    })(Heuristics = TSP.Heuristics || (TSP.Heuristics = {}));
+    });
 })(TSP || (TSP = {}));
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
-    var Heuristics;
-    (function (Heuristics) {
-        function Radius(vertices) {
+    TSP.Algorithms.push({
+        name: "Radius",
+        solve: function (vertices) {
             function findNearest(vertex, remainingVertices) {
                 var start = 1;
                 var stop = 2 * 100;
@@ -212,7 +211,7 @@ var TSP;
                 return matches[index];
             }
             if (vertices.length < 3) {
-                return new TSP.Path(vertices);
+                return vertices;
             }
             var result = [];
             var current = vertices[0];
@@ -227,21 +226,19 @@ var TSP;
                 current = nearest;
                 remaining = TSP.removeFrom(remaining, nearest);
             }
-            return new TSP.Path(result);
+            return result;
         }
-        Heuristics.Radius = Radius;
-    })(Heuristics = TSP.Heuristics || (TSP.Heuristics = {}));
+    });
 })(TSP || (TSP = {}));
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
-    var Heuristics;
-    (function (Heuristics) {
-        function Random(xy_vertices) {
+    TSP.Algorithms.push({
+        name: "Random",
+        solve: function (xy_vertices) {
             return TSP.Path.random(xy_vertices.length);
         }
-        Heuristics.Random = Random;
-    })(Heuristics = TSP.Heuristics || (TSP.Heuristics = {}));
+    });
 })(TSP || (TSP = {}));
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
@@ -250,51 +247,48 @@ var TSP;
 /// <reference path="./src/variants/random.ts"/>
 var TSP;
 (function (TSP) {
-    function init(params) {
-        var canvas = params.canvas;
+    function run(params) {
+        var canvas = params.canvas, dimensions = params.dimensions, picker = params.picker, count = params.count, calculate = params.calculate;
         var context = canvas.getContext('2d');
-        var reverseMap = {};
         var timings = [];
-        canvas.width = params.dimensions.width;
-        canvas.height = params.dimensions.height;
-        Object.keys(TSP.Heuristics).forEach(function (algorithm_function_key) {
-            var algorithm_function = TSP.Heuristics[algorithm_function_key];
-            var name = algorithm_function.name;
+        canvas.width = dimensions.width;
+        canvas.height = dimensions.height;
+        function addOptionByName(name) {
             var option = document.createElement('option');
-            reverseMap[name] = algorithm_function;
             option.innerText = name;
-            params.picker.appendChild(option);
+            picker.appendChild(option);
+        }
+        TSP.Algorithms.forEach(function (algorithm) {
+            addOptionByName(algorithm.name);
         });
         function deleteTimings() { timings.splice(0, timings.length); }
-        params.picker.addEventListener('change', deleteTimings);
-        params.count.addEventListener('change', deleteTimings);
+        picker.addEventListener('change', deleteTimings);
+        count.addEventListener('change', deleteTimings);
         canvas.addEventListener('click', function (event) {
             console.log("Click:", new TSP.Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop));
         });
-        params.calculate.addEventListener('click', function (event) {
-            var user_count = params.count.valueAsNumber;
-            var algorithm_name = params.picker.value;
+        calculate.addEventListener('click', function (event) {
+            var user_count = count.valueAsNumber;
+            var algorithm_name = picker.value;
             if (isNaN(user_count)) {
                 return;
             }
             var clamped_count = Math.min(Math.max(5, user_count), 1000);
-            params.count.value = clamped_count.toString();
-            var random_path = TSP.Path.random(clamped_count);
-            var before = Date.now();
-            var shortest_path = reverseMap[algorithm_name](random_path.vertices, params.dimensions);
-            var after = Date.now();
-            var dt = after - before;
-            timings.push(dt);
-            TSP.display(shortest_path, context, params.dimensions);
+            count.value = clamped_count.toString();
+            var random_vertices = TSP.Path.random(clamped_count);
+            var algorithm = TSP.Algorithms.filter(function (algo) { return algo.name === algorithm_name; })[0];
+            var result = TSP.performTest(algorithm, random_vertices);
+            timings.push(result.time);
+            TSP.display(result.path, context, params.dimensions);
             var info = params.infoPanel;
-            info.length.innerText = "Lengte: " + Math.round(shortest_path.length).toString() + "\n";
-            info.time.innerText = "Tijd: " + dt.toString() + "ms \n\n";
+            info.length.innerText = "Lengte: " + Math.round(result.path.length).toString() + "\n";
+            info.time.innerText = "Tijd: " + result.time.toString() + "ms \n\n";
             info.averageTime.innerText = "Gemiddelde tijd: " + Math.round(TSP.average(timings)).toString() + "ms   \n";
         }, false);
     }
-    TSP.init = init;
+    TSP.run = run;
 })(TSP || (TSP = {}));
-TSP.init({
+TSP.run({
     dimensions: new TSP.Size(500, 500),
     canvas: document.getElementById('Viewport'),
     picker: document.getElementById('Picker'),

@@ -1,8 +1,9 @@
 /// <reference path="./../common.ts"/>
 
 module TSP {
-    export module Heuristics {
-        export function Nearest(vertices: Vector[]) {
+    Algorithms.push({
+        name: "Nearest",
+        solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, remainingVertices: Vector[]): Vector {
                 let lengths = remainingVertices.map((match: Vector) => vertex.to(match).lengthSquared)
                 let minLength = Math.min.apply(null, lengths)
@@ -12,7 +13,7 @@ module TSP {
             }
             
             if (vertices.length < 3) {
-                return new Path(vertices)
+                return vertices
             }
             
             let result: Vector[] = []
@@ -30,7 +31,7 @@ module TSP {
                 remaining = removeFrom(remaining, nearest)
             }
             
-            return new Path(result)
+            return result
         }
-    }
+    })
 }

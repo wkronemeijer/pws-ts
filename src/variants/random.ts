@@ -1,9 +1,10 @@
 /// <reference path="./../common.ts"/>
 
 module TSP {
-    export module Heuristics {
-        export function Random(xy_vertices: Vector[]) {
+    Algorithms.push({
+        name: "Random",
+        solve(xy_vertices: Vector[]): Vector[] {
             return Path.random(xy_vertices.length)
         }
-    }
+    })
 }

@@ -21,32 +21,30 @@ module TSP {
         calculate: HTMLButtonElement
     }
     
-    export function init(params: GlobalOptions) {
-        let canvas = params.canvas
+    export function run(params: GlobalOptions) {
+        let {canvas, dimensions, picker, count, calculate} = params
         let context = <CanvasRenderingContext2D>canvas.getContext('2d')
-        let reverseMap = {}
         let timings: number[] = []
         
-        canvas.width = params.dimensions.width
-        canvas.height = params.dimensions.height
+        canvas.width = dimensions.width
+        canvas.height = dimensions.height
 
 
-        Object.keys(TSP.Heuristics).forEach((algorithm_function_key) => {
-            let algorithm_function = TSP.Heuristics[algorithm_function_key]
-            let name = algorithm_function.name
+        function addOptionByName(name: string) {
             let option = document.createElement('option')
-            
-            reverseMap[name] = algorithm_function
-            
             option.innerText = name
-            params.picker.appendChild(option)
+            picker.appendChild(option)
+        }
+
+        TSP.Algorithms.forEach(algorithm => {
+            addOptionByName(algorithm.name)
         })
         
         
         function deleteTimings() {timings.splice(0, timings.length)}
         
-        params.picker.addEventListener('change', deleteTimings)
-        params.count.addEventListener('change', deleteTimings)
+        picker.addEventListener('change', deleteTimings)
+        count.addEventListener('change', deleteTimings)
         
         
         canvas.addEventListener('click', (event) => {
@@ -54,35 +52,35 @@ module TSP {
         })
         
         
-        params.calculate.addEventListener('click', (event) => {
-            let user_count = params.count.valueAsNumber
-            let algorithm_name = params.picker.value
+        calculate.addEventListener('click', (event) => {
+            let user_count     = count.valueAsNumber
+            let algorithm_name = picker.value
             
-            if (isNaN(user_count)) {return}
+            if (isNaN(user_count)) {
+                return
+            }
             
             let clamped_count = Math.min(Math.max(5, user_count), 1000)
-            params.count.value = clamped_count.toString()
+            count.value = clamped_count.toString()
             
-            let random_path = TSP.Path.random(clamped_count)
+            let random_vertices = TSP.Path.random(clamped_count)
+            let algorithm       = Algorithms.filter(algo => algo.name === algorithm_name)[0]
             
-            let before = Date.now()
-            let shortest_path = <Path>reverseMap[algorithm_name](random_path.vertices, params.dimensions)
-            let after = Date.now()
+            let result = performTest(algorithm, random_vertices)
             
-            let dt = after - before
-            timings.push(dt)
+            timings.push(result.time)
             
-            display(shortest_path, context, params.dimensions)
+            display(result.path, context, params.dimensions)
             
             let info = params.infoPanel
-            info.length.innerText      = "Lengte: "         + Math.round(shortest_path.length).toString() +      "\n"
-            info.time.innerText        = "Tijd: "           + dt.toString()                               + "ms \n\n"
-            info.averageTime.innerText = "Gemiddelde tijd: "+ Math.round(average(timings)).toString()     + "ms   \n"
+            info.length.innerText      = "Lengte: "          + Math.round(result.path.length).toString() +      "\n"
+            info.time.innerText        = "Tijd: "            + result.time.toString()                    + "ms \n\n"
+            info.averageTime.innerText = "Gemiddelde tijd: " + Math.round(average(timings)).toString()   + "ms   \n"
         }, false)
     }
 }
 
-TSP.init({
+TSP.run({
     dimensions: new TSP.Size(500, 500),
     canvas: <HTMLCanvasElement>document.getElementById('Viewport'),
     picker: <HTMLSelectElement>document.getElementById('Picker'),

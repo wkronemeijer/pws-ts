@@ -11,8 +11,7 @@ var TSP;
         };
         Object.defineProperty(Vector.prototype, "lengthSquared", {
             get: function () {
-                var x = this.x;
-                var y = this.y;
+                var _a = this, x = _a.x, y = _a.y;
                 return x * x + y * y;
             },
             enumerable: true,
@@ -38,8 +37,7 @@ var TSP;
             Object.freeze(this);
         }
         Circle.prototype.contains = function (point) {
-            var center = this.center;
-            var radius = this.radius;
+            var _a = this, center = _a.center, radius = _a.radius;
             var relative = center.to(point);
             var radiusSquared = radius * radius;
             return relative.lengthSquared < radiusSquared;
@@ -53,6 +51,7 @@ var TSP;
             this.height = height;
             Object.freeze(this);
         }
+        Size.default = new Size(100, 100);
         return Size;
     })();
     TSP.Size = Size;
@@ -62,26 +61,26 @@ var TSP;
             Object.freeze(this.vertices);
             Object.freeze(this);
         }
-        Path.random = function (count, range) {
+        Path.random = function (vertex_count) {
             var random = Math.random;
-            var verticesAccumulator = new Array(count);
-            for (var index = 0; index < count; index++) {
-                verticesAccumulator[index] = new Vector(random() * range.width, random() * range.height);
+            var verticesAccumulator = new Array(vertex_count);
+            for (var index = 0; index < vertex_count; index++) {
+                verticesAccumulator[index] = new Vector(random() * 100, random() * 100);
             }
             return new Path(verticesAccumulator);
         };
         Object.defineProperty(Path.prototype, "length", {
             get: function () {
                 var _this = this;
-                var lengthAccumulator = 0;
+                var accumulator = 0;
                 var length = this.vertices.length;
                 this.vertices.forEach(function (vertex, index) {
                     if (index + 1 < length) {
                         var next = _this.vertices[index + 1];
-                        lengthAccumulator += vertex.to(next).length;
+                        accumulator += vertex.to(next).length;
                     }
                 });
-                return lengthAccumulator;
+                return accumulator;
             },
             enumerable: true,
             configurable: true
@@ -89,7 +88,19 @@ var TSP;
         return Path;
     })();
     TSP.Path = Path;
-    function remove(array, item) {
+    var t;
+    function performTest(algo, vertices) {
+        var before = Date.now();
+        var solved = algo.solve(vertices);
+        var after = Date.now();
+        return {
+            algorithm: algo,
+            path: new Path(solved),
+            time: after - before
+        };
+    }
+    TSP.performTest = performTest;
+    function removeFrom(array, item) {
         var index = array.indexOf(item);
         if (index !== -1) {
             var before = array.slice(0, index);
@@ -100,7 +111,7 @@ var TSP;
             return array;
         }
     }
-    TSP.remove = remove;
+    TSP.removeFrom = removeFrom;
     function average(array) {
         if (array.length > 1) {
             var sum = array.reduce(function (a, b) { return a + b; });
@@ -111,7 +122,7 @@ var TSP;
             return array[0];
         }
         else {
-            return 0;
+            return NaN;
         }
     }
     TSP.average = average;
@@ -143,7 +154,7 @@ var TSP;
 (function (TSP) {
     var Heuristics;
     (function (Heuristics) {
-        function Nearest(vertices, dimensions) {
+        function Nearest(vertices) {
             function findNearest(vertex, remainingVertices) {
                 var lengths = remainingVertices.map(function (match) { return vertex.to(match).lengthSquared; });
                 var minLength = Math.min.apply(null, lengths);
@@ -164,7 +175,7 @@ var TSP;
                 }
                 result.push(nearest);
                 current = nearest;
-                remaining = TSP.remove(remaining, nearest);
+                remaining = TSP.removeFrom(remaining, nearest);
             }
             return new TSP.Path(result);
         }
@@ -176,10 +187,10 @@ var TSP;
 (function (TSP) {
     var Heuristics;
     (function (Heuristics) {
-        function Radius(vertices, dimensions) {
+        function Radius(vertices) {
             function findNearest(vertex, remainingVertices) {
                 var start = 1;
-                var stop = 2 * Math.max(dimensions.width, dimensions.height);
+                var stop = 2 * 100;
                 var step = stop / 10;
                 var radius = start;
                 var matches = [];
@@ -214,7 +225,7 @@ var TSP;
                 }
                 result.push(nearest);
                 current = nearest;
-                remaining = TSP.remove(remaining, nearest);
+                remaining = TSP.removeFrom(remaining, nearest);
             }
             return new TSP.Path(result);
         }
@@ -226,9 +237,8 @@ var TSP;
 (function (TSP) {
     var Heuristics;
     (function (Heuristics) {
-        function Random(xy_vertices, dimensions) {
-            var length = xy_vertices.length;
-            return TSP.Path.random(length, dimensions);
+        function Random(xy_vertices) {
+            return TSP.Path.random(xy_vertices.length);
         }
         Heuristics.Random = Random;
     })(Heuristics = TSP.Heuristics || (TSP.Heuristics = {}));
@@ -269,7 +279,7 @@ var TSP;
             }
             var clamped_count = Math.min(Math.max(5, user_count), 1000);
             params.count.value = clamped_count.toString();
-            var random_path = TSP.Path.random(clamped_count, params.dimensions);
+            var random_path = TSP.Path.random(clamped_count);
             var before = Date.now();
             var shortest_path = reverseMap[algorithm_name](random_path.vertices, params.dimensions);
             var after = Date.now();

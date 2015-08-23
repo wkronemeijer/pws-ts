@@ -55,15 +55,15 @@ module TSP {
             Object.freeze(this)
         }
         
-        static random(vertex_count: number): Path {
+        static random(vertex_count: number): Vector[] {
             let random = Math.random
-            let verticesAccumulator = new Array(vertex_count)
+            let accumulator = new Array(vertex_count)
             
             for (var index = 0; index < vertex_count; index++ ) {
-                verticesAccumulator[index] = new Vector(random() * 100, random() * 100)
+                accumulator[index] = new Vector(random() * 100, random() * 100)
             }
             
-            return new Path(verticesAccumulator)
+            return Object.freeze(accumulator)
         }
         
         get length(): number {
@@ -95,7 +95,7 @@ module TSP {
         solve(vertices: Vector[]): Vector[]
     }
     
-    let t: TestResult
+    
     
     export function performTest(algo: TSPAlgorithm, vertices: Vector[]): TestResult {
         let before = Date.now()
@@ -109,6 +109,10 @@ module TSP {
         }
     }
     
+    
+    export function convertToHTML(t: TestResult) {
+        
+    }
     
     export function removeFrom<T>(array: T[], item: T): Array<T> {
         let index = array.indexOf(item)

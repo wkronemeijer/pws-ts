@@ -7,6 +7,7 @@ body {
 .horizontal {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
 }
 
 .horizontal > * {
@@ -27,13 +28,16 @@ textarea {
     font-family: monospace;
 }
 
-
-#Viewport {
-    width: 100px;
-    height: 100px;
-}
-
 #InputError {
     color: red;
     font-weight: bold;
+    text-align: center;
+}
+
+canvas {
+    width: 300px;
+    height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
 }

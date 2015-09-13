@@ -1,3 +1,9 @@
+interface HTMLAnchorElement {
+    download: string
+}
+
+
+
 module TSP {
     export class Vector {
         constructor(public x: number, public y: number) {
@@ -47,7 +53,7 @@ module TSP {
             Object.freeze(this)
         }
         
-        static default = new Size(100, 100)
+        static default = new Size(1000, 1000)
     }
     
     
@@ -62,7 +68,7 @@ module TSP {
             let accumulator = new Array(vertex_count)
             
             for (var index = 0; index < vertex_count; index++ ) {
-                accumulator[index] = new Vector(random() * 100, random() * 100)
+                accumulator[index] = new Vector(random() * 1000, random() * 1000)
             }
             
             return Object.freeze(accumulator)
@@ -113,7 +119,6 @@ module TSP {
     
     
     let nestedFromJSON = (json: string) => <number[][]> JSON.parse(json)
-    
     let verticesFromNested = (nested_array: number[][]) => nested_array.map(([x,y]) => {
             if (x !== undefined && y !== undefined) {
                 return new Vector(x, y)
@@ -122,8 +127,20 @@ module TSP {
             }
         }).filter(perhaps => perhaps !== null)
     
-    /**Throws SyntaxError if the input was malformed */
     export let verticesFromJSON = (json: string) => verticesFromNested(nestedFromJSON(json))
+    
+    
+     
+    
+    
+    export function downloadTextFile(text: string) {
+        let a = document.createElement('a')
+        
+        a.href     = `data:text;charset=utf-8,${text}`
+        a.download = `points.txt`
+        
+        a.click()
+    }
     
     
     export function removeFrom<T>(array: T[], item: T): Array<T> {
@@ -149,5 +166,36 @@ module TSP {
         } else {
             return NaN
         }
+    }
+    
+    export function median(samples: number[]): number {
+        let array = samples.slice().sort()
+        
+        let {length} = array
+        if (length % 2 === 1) {
+            return array[(length - 1) / 2]
+        } else {
+            let next = array[length / 2]
+            let prev = array[length / 2 - 1]
+            
+            return (next + prev) / 2
+        }
+    }
+    
+    
+    export function rangeTo(stop: number) {
+        let accumulator = <number[]>[]
+        
+        for (let i = 0; i < stop; i++) {
+            accumulator.push(i)
+        }
+        
+        return accumulator
+    }
+    
+    /**Replaces NaN with default_ */
+    export function parseIntSafe(s: string, default_: number) {
+        let x = parseInt(s)
+        return isNaN(x) ? default_ : x
     }
 }

@@ -6,41 +6,54 @@
     <body>
         <div class="center">
             <div class="horizontal">
-                <canvas id="Viewport">Looks like your browser doesn't support the html5 canvas; quite a shame, really</canvas>
+                <canvas id="ControllerPreview">Looks like your browser doesn't support the html5 canvas; quite a shame, really</canvas>
                 <div class="vertical">
                     <div class="horizontal">
-                        <input type="file">
-                        <button>Import</button>
+                        <input type="file" id="ControllerFiles">
+                        <button id="ControllerImport">Importeer</button>
+                    </div>
+                    <div class="horizontal">
+                        <div class="vertical">
+                            Aantal:
+                            <input type="number" id="RandomCount" min="1" max="100" value="10">
+                            
+                        </div>
+                        <button id="RandomGenerate">Genereer</button>
                     </div>
                     <div class="vertical">
-                        <textarea cols="40" rows="20">
+                        <textarea cols="40" rows="20" id="ControllerFiddleArea">
                         </textarea>
                         <div id="InputError"></div>
                     </div>
                     <div class="horizontal">
-                        <button>Update</button>
-                        <button>Export</button>
+                        <button id="ControllerUpdate">Toon</button>
+                        <button id="ControllerExport">Exporteer</button>
                     </div>
                 </div>
             </div>
-            <div class="vertical">
-                    <div id="Length"></div>
-                    <div id="Time"></div>
-                    <div id="AverageTime"></div> 
-                </div>
+            
             <div class="horizontal">
                 <div class="vertical">
                     Algoritme:
                     <select id="Picker"></select>
                 </div>
                 <div class="vertical">
-                    Aantal punten:
-                    <input id="Count" type="number" value="20">
+                    Aantal tests:
+                    <input id="TestCount" type="number" min="1" max="100" value="5">
                 </div>
                 <div class="vertical">
                     <button id="Calculate">Bereken de kortste route</button>
                 </div>
                 
+            </div>
+            <div class="horizontal">
+                <div class="vertical">
+                    <canvas id="Viewport">Looks like your browser doesn't support the html5 canvas; quite a shame, really</canvas>
+                </div>
+                <div class="vertical">
+                    <div id="InfoPanel"></div>
+                    <div id="AllResults"></div>
+                </div>
             </div>
         </div>
         <script src="packed.js"> </script>

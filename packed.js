@@ -7,7 +7,9 @@ var TSP;
             Object.freeze(this);
         }
         Vector.relative = function (base, target) {
-            return new Vector(target.x - base.x, target.y - base.y);
+            var dx = target.x - base.x;
+            var dy = target.y - base.y;
+            return new Vector(dx, dy);
         };
         Object.defineProperty(Vector.prototype, "lengthSquared", {
             get: function () {
@@ -51,7 +53,7 @@ var TSP;
             this.height = height;
             Object.freeze(this);
         }
-        Size.default = new Size(100, 100);
+        Size.default = new Size(1000, 1000);
         return Size;
     })();
     TSP.Size = Size;
@@ -65,7 +67,7 @@ var TSP;
             var random = Math.random;
             var accumulator = new Array(vertex_count);
             for (var index = 0; index < vertex_count; index++) {
-                accumulator[index] = new Vector(random() * 100, random() * 100);
+                accumulator[index] = new Vector(random() * 1000, random() * 1000);
             }
             return Object.freeze(accumulator);
         };
@@ -100,6 +102,24 @@ var TSP;
     }
     TSP.performTest = performTest;
     TSP.Heuristics = [];
+    var nestedFromJSON = function (json) { return JSON.parse(json); };
+    var verticesFromNested = function (nested_array) { return nested_array.map(function (_a) {
+        var x = _a[0], y = _a[1];
+        if (x !== undefined && y !== undefined) {
+            return new Vector(x, y);
+        }
+        else {
+            return null;
+        }
+    }).filter(function (perhaps) { return perhaps !== null; }); };
+    TSP.verticesFromJSON = function (json) { return verticesFromNested(nestedFromJSON(json)); };
+    function downloadTextFile(text) {
+        var a = document.createElement('a');
+        a.href = "data:text;charset=utf-8," + text;
+        a.download = "points.txt";
+        a.click();
+    }
+    TSP.downloadTextFile = downloadTextFile;
     function removeFrom(array, item) {
         var index = array.indexOf(item);
         if (index !== -1) {
@@ -126,28 +146,138 @@ var TSP;
         }
     }
     TSP.average = average;
+    function median(samples) {
+        var array = samples.slice().sort();
+        var length = array.length;
+        if (length % 2 === 1) {
+            return array[(length - 1) / 2];
+        }
+        else {
+            var next = array[length / 2];
+            var prev = array[length / 2 - 1];
+            return (next + prev) / 2;
+        }
+    }
+    TSP.median = median;
+    function rangeTo(stop) {
+        var accumulator = [];
+        for (var i = 0; i < stop; i++) {
+            accumulator.push(i);
+        }
+        return accumulator;
+    }
+    TSP.rangeTo = rangeTo;
+    function parseIntSafe(s, default_) {
+        var x = parseInt(s);
+        return isNaN(x) ? default_ : x;
+    }
+    TSP.parseIntSafe = parseIntSafe;
 })(TSP || (TSP = {}));
 /// <reference path="../tsp.ts"/>
 var TSP;
 (function (TSP) {
-    var π = Math.PI;
-    var radius = 2;
-    function display(path, ctx, dimensions) {
+    var τ = 2 * Math.PI;
+    function display(parameters) {
+        var path = parameters.path, ctx = parameters.context, _a = parameters.dimensions, width = _a.width, height = _a.height, _b = parameters.edgeWidth, edgeWidth = _b === void 0 ? 2 : _b, _c = parameters.vertexSize, vertexSize = _c === void 0 ? 5 : _c;
         window.requestAnimationFrame(function () {
-            ctx.clearRect(0, 0, dimensions.width, dimensions.height);
-            ctx.beginPath();
-            path.vertices.forEach(function (vertex) { return ctx.lineTo(vertex.x, vertex.y); });
-            ctx.closePath();
-            ctx.stroke();
-            path.vertices.forEach(function (vertex) {
+            ctx.clearRect(0, 0, width, height);
+            if (edgeWidth > 0) {
+                ctx.lineWidth = edgeWidth;
                 ctx.beginPath();
-                ctx.arc(vertex.x, vertex.y, radius, 0, 2 * π);
+                path.vertices.forEach(function (vertex) { return ctx.lineTo(vertex.x, vertex.y); });
                 ctx.closePath();
-                ctx.fill();
-            });
+                ctx.stroke();
+            }
+            if (vertexSize > 0) {
+                path.vertices.forEach(function (vertex) {
+                    ctx.beginPath();
+                    ctx.arc(vertex.x, vertex.y, vertexSize, 0, τ);
+                    ctx.closePath();
+                    ctx.fill();
+                });
+            }
         });
     }
     TSP.display = display;
+})(TSP || (TSP = {}));
+/// <reference path="./common.ts"/>
+/// <reference path="/usr/local/lib/node_modules/typescript/bin/lib.es6.d.ts"/>
+var TSP;
+(function (TSP) {
+    "use strict";
+    TSP.storageKey = 'yolo';
+    var Controller = (function () {
+        function Controller(parameters) {
+            Object.assign(this, parameters);
+            this.vertices = null;
+            this.previewContext = this.previewArea.getContext('2d');
+            this.registerListeners();
+            Object.seal(this);
+        }
+        Controller.prototype.registerListeners = function () {
+            var _this = this;
+            this.importButton.addEventListener('click', function (event) { return _this.importContentFromFile(); }, false);
+            this.exportButton.addEventListener('click', function (event) { return _this.exportContentToFile(); }, false);
+            this.updateButton.addEventListener('click', function (event) { return _this.updatePreview(); }, false);
+            this.generateButton.addEventListener('click', function (event) { return _this.generateRandomVertices(); }, false);
+            window.addEventListener('beforeunload', function (event) { return _this.saveFiddle(); }, false);
+            this.loadFiddle();
+        };
+        Controller.prototype.generateRandomVertices = function () {
+            var count = TSP.parseIntSafe(this.randomCount.value, 1);
+            var vertices = TSP.Path.random(count);
+            var pairs = vertices.map(function (vertex) { return [vertex.x, vertex.y]; });
+            this.fiddleArea.value = JSON.stringify(pairs, null, 4);
+        };
+        Controller.prototype.saveFiddle = function () {
+            window.localStorage.setItem(TSP.storageKey, this.fiddleArea.value);
+        };
+        Controller.prototype.loadFiddle = function () {
+            var value = window.localStorage.getItem(TSP.storageKey);
+            if (value) {
+                this.fiddleArea.value = value;
+            }
+        };
+        Controller.prototype.importContentFromFile = function () {
+            var _this = this;
+            var file = this.fileInput.files[0];
+            var reader = new FileReader();
+            this.fiddleArea.value = "";
+            reader.readAsText(file);
+            reader.addEventListener('loadend', function (event) {
+                var result = reader.result;
+                _this.fiddleArea.value = result;
+            }, false);
+        };
+        Controller.prototype.exportContentToFile = function () {
+            TSP.downloadTextFile(this.fiddleArea.value);
+        };
+        Controller.prototype.updatePreview = function () {
+            var error;
+            try {
+                this.vertices = TSP.verticesFromJSON(this.fiddleArea.value);
+                error = false;
+            }
+            catch (e) {
+                error = true;
+            }
+            if (error) {
+                this.importError.innerText = 'Malformed input';
+            }
+            else {
+                this.importError.innerText = '';
+                this.saveFiddle();
+                TSP.display({
+                    path: new TSP.Path(this.vertices),
+                    context: this.previewContext,
+                    dimensions: TSP.Size.default,
+                    edgeWidth: 0,
+                });
+            }
+        };
+        return Controller;
+    })();
+    TSP.Controller = Controller;
 })(TSP || (TSP = {}));
 /// <reference path="./../common.ts"/>
 var TSP;
@@ -242,101 +372,66 @@ var TSP;
 })(TSP || (TSP = {}));
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
+/// <reference path="./src/controller.ts"/>
 /// <reference path="./src/variants/nn.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/variants/random.ts"/>
 var TSP;
 (function (TSP) {
+    "use strict";
     function run(params) {
-        var canvas = params.canvas, dimensions = params.dimensions, picker = params.picker, count = params.count, calculate = params.calculate;
+        var dimensions = params.dimensions, picker = params.picker, calculate = params.calculate, controllerArguments = params.controllerArguments, infoPanel = params.infoPanel, allResults = params.allResults, testCount = params.testCount, canvas = params.canvas;
+        var previewArea = controllerArguments.previewArea;
+        canvas.width = previewArea.width = dimensions.width;
+        canvas.height = previewArea.height = dimensions.height;
         var context = canvas.getContext('2d');
-        var timings = [];
-        window["falafal"] = context;
-        canvas.width = dimensions.width;
-        canvas.height = dimensions.height;
+        var controller = new TSP.Controller(controllerArguments);
         function addOptionByName(name) {
             var option = document.createElement('option');
             option.innerText = name;
             picker.appendChild(option);
         }
-        TSP.Heuristics.forEach(function (algorithm) {
-            addOptionByName(algorithm.name);
-        });
-        function deleteTimings() { timings.splice(0, timings.length); }
-        picker.addEventListener('change', deleteTimings);
-        count.addEventListener('change', deleteTimings);
-        canvas.addEventListener('click', function (event) {
-            var location = new TSP.Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop);
-        });
+        TSP.Heuristics.forEach(function (algorithm) { return addOptionByName(algorithm.name); });
         calculate.addEventListener('click', function (event) {
-            var user_count = count.valueAsNumber;
-            var algorithm_name = picker.value;
-            if (isNaN(user_count)) {
-                return;
-            }
-            var clamped_count = Math.min(Math.max(5, user_count), 500);
-            count.value = clamped_count.toString();
-            var random_vertices = TSP.Path.random(clamped_count);
-            var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === algorithm_name; })[0];
-            var result = TSP.performTest(algorithm, random_vertices);
-            timings.push(result.time);
-            TSP.display(result.path, context, dimensions);
-            var info = params.infoPanel;
-            info.length.innerText = "Lengte: " + Math.round(result.path.length).toString() + "\n";
-            info.time.innerText = "Tijd: " + result.time.toString() + "ms \n\n";
-            info.averageTime.innerText = "Gemiddelde tijd: " + Math.round(TSP.average(timings)).toString() + "ms   \n";
+            controller.updatePreview();
+            var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === picker.value; })[0];
+            var count = TSP.parseIntSafe(testCount.value, 1);
+            var results = [];
+            var iconic_path = TSP.performTest(algorithm, controller.vertices).path;
+            TSP.rangeTo(count).forEach(function (i) { return results.push(TSP.performTest(algorithm, controller.vertices)); });
+            TSP.display({
+                path: iconic_path,
+                context: context,
+                dimensions: dimensions,
+            });
+            var timings = results.map(function (result) { return result.time; });
+            infoPanel.innerText =
+                ("Lengte: " + Math.round(iconic_path.length) + "\n") +
+                    ("Mediaan tijd: " + Math.round(TSP.median(timings)) + "ms\n") +
+                    ("Gemiddelde tijd: " + Math.round(TSP.average(timings)) + "ms\n");
+            allResults.innerText = "Tijden: " + results.map(function (result) { return Math.round(result.time); }).join(', ');
         }, false);
     }
     TSP.run = run;
 })(TSP || (TSP = {}));
 TSP.run({
-    dimensions: new TSP.Size(100, 100),
+    dimensions: new TSP.Size(1000, 1000),
+    infoPanel: document.getElementById('InfoPanel'),
+    allResults: document.getElementById('AllResults'),
     canvas: document.getElementById('Viewport'),
-    picker: document.getElementById('Picker'),
-    count: document.getElementById('Count'),
-    infoPanel: {
-        length: document.getElementById('Length'),
-        time: document.getElementById('Time'),
-        averageTime: document.getElementById('AverageTime')
+    controllerArguments: {
+        exportButton: document.getElementById("ControllerExport"),
+        importButton: document.getElementById("ControllerImport"),
+        importError: document.getElementById("InputError"),
+        previewArea: document.getElementById("ControllerPreview"),
+        fiddleArea: document.getElementById("ControllerFiddleArea"),
+        fileInput: document.getElementById("ControllerFiles"),
+        updateButton: document.getElementById("ControllerUpdate"),
+        randomCount: document.getElementById("RandomCount"),
+        generateButton: document.getElementById("RandomGenerate"),
     },
-    calculate: document.getElementById('Calculate')
+    picker: document.getElementById('Picker'),
+    calculate: document.getElementById('Calculate'),
+    testCount: document.getElementById('TestCount'),
 });
-/// <reference path="./common.ts"/>
-var TSP;
-(function (TSP) {
-    "use strict";
-    var storageKey = "willy2k16";
-    var PortController = (function () {
-        function PortController(params) {
-            var fileInput = params.fileInput, importButton = params.importButton, exportButton = params.exportButton, fiddleArea = params.fiddleArea;
-            this.fileInput = fileInput;
-            this.importButton = importButton;
-            this.exportButton = exportButton;
-            this.fiddleArea = fiddleArea;
-            this.vertices = null;
-            Object.seal(this);
-        }
-        PortController.prototype.saveContent = function () {
-            localStorage.setItem(storageKey, this.fiddleArea.innerText);
-        };
-        PortController.prototype.loadContent = function () {
-            var stored = localStorage.getItem(storageKey);
-            if (stored !== null) {
-                this.fiddleArea.value = stored;
-            }
-        };
-        PortController.prototype.importContentFromFile = function () {
-            var _this = this;
-            var file = this.fileInput.files[0];
-            var reader = new FileReader();
-            reader.readAsText(file);
-            reader.addEventListener('loadend', function (event) {
-                var json_text = reader.result;
-                _this.fiddleArea.innerText = json_text;
-            }, false);
-        };
-        return PortController;
-    })();
-    TSP.PortController = PortController;
-})(TSP || (TSP = {}));
 //# sourceMappingURL=packed.js.map

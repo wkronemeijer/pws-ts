@@ -1,100 +1,93 @@
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
+/// <reference path="./src/controller.ts"/>
 
 /// <reference path="./src/variants/nn.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/variants/random.ts"/>
 
 module TSP {
-    export interface InfoPanel {
-        length: HTMLSpanElement
-        time: HTMLSpanElement
-        averageTime: HTMLSpanElement
-    }
+    "use strict"
+    
     
     export interface GlobalOptions {
         dimensions: Size
-        picker: HTMLSelectElement
-        count: HTMLInputElement
-        canvas: HTMLCanvasElement
-        infoPanel: InfoPanel
+        canvas:     HTMLCanvasElement
+        infoPanel:  HTMLDivElement
+        allResults: HTMLDivElement
+        
+        controllerArguments: ControllerConstructorArguments
+        
+        picker:    HTMLSelectElement
+        testCount: HTMLInputElement
         calculate: HTMLButtonElement
     }
     
+    
     export function run(params: GlobalOptions) {
-        let {canvas, dimensions, picker, count, calculate} = params
-        let context = <CanvasRenderingContext2D>canvas.getContext('2d')
-        let timings: number[] = []
+        let {dimensions, picker, calculate, controllerArguments, infoPanel, allResults, testCount, canvas} = params
+        let {previewArea} = controllerArguments
         
+        canvas.width  = previewArea.width  = dimensions.width
+        canvas.height = previewArea.height = dimensions.height
         
-        canvas.width  = dimensions.width
-        canvas.height = dimensions.height
-
-
+        let context    = <CanvasRenderingContext2D>canvas.getContext('2d')
+        let controller = new Controller(controllerArguments)
+        
         function addOptionByName(name: string) {
             let option = document.createElement('option')
             option.innerText = name
             picker.appendChild(option)
         }
-
-        TSP.Heuristics.forEach(algorithm => {
-            addOptionByName(algorithm.name)
-        })
         
-        
-        function deleteTimings() {timings.splice(0, timings.length)}
-        
-        picker.addEventListener('change', deleteTimings)
-        count.addEventListener('change', deleteTimings)
-        
-        
-        canvas.addEventListener('click', (event) => {
-            let location = new Vector(event.pageX - canvas.offsetLeft, event.pageY - canvas.offsetTop)
-            
-            
-            
-            
-            
-        })
-        
+        TSP.Heuristics.forEach(algorithm => addOptionByName(algorithm.name))
         
         calculate.addEventListener('click', (event) => {
-            let user_count     = count.valueAsNumber
-            let algorithm_name = picker.value
+            controller.updatePreview()
             
-            if (isNaN(user_count)) {
-                return
-            }
+            let algorithm   = Heuristics.filter(algo => algo.name === picker.value)[0]
+            let count       = parseIntSafe(testCount.value, 1)
+            let results     = <TestResult[]>[]
+            let iconic_path = performTest(algorithm, controller.vertices).path
             
-            let clamped_count = Math.min(Math.max(5, user_count), 500)
-            count.value = clamped_count.toString()
+            rangeTo(count).forEach(i => results.push(performTest(algorithm, controller.vertices)))
             
-            let random_vertices = Path.random(clamped_count)
-            let algorithm       = Heuristics.filter(algo => algo.name === algorithm_name)[0]
+            display({
+                path: iconic_path, 
+                context: context, 
+                dimensions,
+            })
             
-            let result = performTest(algorithm, random_vertices)
+            let timings = results.map(result => result.time)
             
-            timings.push(result.time)
+            infoPanel.innerText  = 
+                `Lengte: ${         Math.round(iconic_path.length)}\n`   +
+                `Mediaan tijd: ${   Math.round(median(timings))   }ms\n` +
+                `Gemiddelde tijd: ${Math.round(average(timings))  }ms\n`
             
-            display(result.path, context, dimensions)
+            allResults.innerText = `Tijden: ${results.map(result => Math.round(result.time)).join(', ')}`
             
-            let info = params.infoPanel
-            info.length.innerText      = "Lengte: "          + Math.round(result.path.length).toString() +      "\n"
-            info.time.innerText        = "Tijd: "            + result.time.toString()                    + "ms \n\n"
-            info.averageTime.innerText = "Gemiddelde tijd: " + Math.round(average(timings)).toString()   + "ms   \n"
         }, false)
     }
 }
 
 TSP.run({
-    dimensions: new TSP.Size(100, 100),
-    canvas: <HTMLCanvasElement>document.getElementById('Viewport'),
-    picker: <HTMLSelectElement>document.getElementById('Picker'),
-    count:  <HTMLInputElement> document.getElementById('Count'),
-    infoPanel: {
-        length:      <HTMLDivElement>document.getElementById('Length'),
-        time:        <HTMLDivElement>document.getElementById('Time'),
-        averageTime: <HTMLDivElement>document.getElementById('AverageTime')
+    dimensions: new TSP.Size(1000, 1000),
+    infoPanel:  <HTMLDivElement>    document.getElementById('InfoPanel'), 
+    allResults: <HTMLDivElement>   document.getElementById('AllResults'),
+    canvas:     <HTMLCanvasElement>document.getElementById('Viewport'),
+    controllerArguments: {
+        exportButton:   <HTMLButtonElement>  document.getElementById("ControllerExport"),
+        importButton:   <HTMLButtonElement>  document.getElementById("ControllerImport"),
+        importError:    <HTMLDivElement>     document.getElementById("InputError"),
+        previewArea:    <HTMLCanvasElement>  document.getElementById("ControllerPreview"),
+        fiddleArea:     <HTMLTextAreaElement>document.getElementById("ControllerFiddleArea"),
+        fileInput:      <HTMLInputElement>   document.getElementById("ControllerFiles"),
+        updateButton:   <HTMLButtonElement>  document.getElementById("ControllerUpdate"),
+        randomCount:    <HTMLInputElement>   document.getElementById("RandomCount"),
+        generateButton: <HTMLButtonElement>  document.getElementById("RandomGenerate"),
     },
-    calculate: <HTMLButtonElement>document.getElementById('Calculate')
-})
+    picker:    <HTMLSelectElement>document.getElementById('Picker'),
+    calculate: <HTMLButtonElement>document.getElementById('Calculate'),
+    testCount: <HTMLInputElement> document.getElementById('TestCount'),
+});

@@ -68,7 +68,7 @@ module TSP {
         generateRandomVertices() {
             let count    = parseIntSafe(this.randomCount.value, 1)
             let vertices = Path.random(count)
-            let pairs    = vertices.map(vertex => [vertex.x , vertex.y])
+            let pairs    = vertices.map(vertex => [Math.round(vertex.x) , Math.round(vertex.y)])
             
             this.fiddleArea.value = JSON.stringify(pairs, null, 4)
         }

@@ -6,11 +6,11 @@ module TSP {
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, remainingVertices: Vector[]): Vector {
                 let start = 1
-                let stop = 2 * 100
+                let stop = 2 * 1000
                 let step = stop / 10
                 
-                var radius = start
-                let matches: Vector[] = []
+                var radius  = start
+                let matches = <Vector[]>[]
                 
                 while (matches.length === 0) {
                     var circle = new Circle(vertex, radius)
@@ -24,20 +24,19 @@ module TSP {
                     if (radius >= stop) {return null}
                 }
                 
-                // All lengths are actually lengthSquared; easier to type
-                let lengths = matches.map((match: Vector) => vertex.to(match).lengthSquared)
+                let lengths   = matches.map((match: Vector) => vertex.to(match).lengthSquared)
                 let minLength = Math.min.apply(null, lengths)
-                let index = lengths.indexOf(minLength)
+                let index     = lengths.indexOf(minLength)
                 
                 return matches[index]
             }
             
-            if (vertices.length < 3) {
+            if (vertices.length <= 3) {
                 return vertices
             }
             
-            let result: Vector[] = []
-            var current = vertices[0]
+            let result    = <Vector[]>[]
+            var current   = vertices[0]
             var remaining = vertices.slice(1)
             
             result.push(current)

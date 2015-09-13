@@ -226,7 +226,7 @@ var TSP;
         Controller.prototype.generateRandomVertices = function () {
             var count = TSP.parseIntSafe(this.randomCount.value, 1);
             var vertices = TSP.Path.random(count);
-            var pairs = vertices.map(function (vertex) { return [vertex.x, vertex.y]; });
+            var pairs = vertices.map(function (vertex) { return [Math.round(vertex.x), Math.round(vertex.y)]; });
             this.fiddleArea.value = JSON.stringify(pairs, null, 4);
         };
         Controller.prototype.saveFiddle = function () {
@@ -319,7 +319,7 @@ var TSP;
         solve: function (vertices) {
             function findNearest(vertex, remainingVertices) {
                 var start = 1;
-                var stop = 2 * 100;
+                var stop = 2 * 1000;
                 var step = stop / 10;
                 var radius = start;
                 var matches = [];
@@ -340,7 +340,7 @@ var TSP;
                 var index = lengths.indexOf(minLength);
                 return matches[index];
             }
-            if (vertices.length < 3) {
+            if (vertices.length <= 3) {
                 return vertices;
             }
             var result = [];

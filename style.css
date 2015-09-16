@@ -41,3 +41,12 @@ canvas {
     border-radius: 5px;
     padding: 5px;
 }
+
+button:hover {
+    cursor: pointer
+}
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+}

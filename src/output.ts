@@ -1,15 +1,6 @@
 /// <reference path="../tsp.ts"/>
 
 module TSP {
-    export interface DisplayParams {
-        infoPanel: HTMLDivElement
-        context: CanvasRenderingContext2D
-        dimensions: Size
-        time: number
-        radius: number
-    }
-    
-    
     export interface DisplayParameters {
         path: Path
         context: CanvasRenderingContext2D
@@ -26,9 +17,11 @@ module TSP {
             path, 
             context: ctx, 
             dimensions: {width, height}, 
-            edgeWidth = 2, 
+            edgeWidth  = 2, 
             vertexSize = 5,
         } = parameters
+        
+        let {closed} = path
         
         window.requestAnimationFrame(() => {
             ctx.clearRect(0, 0, width, height)
@@ -45,7 +38,7 @@ module TSP {
                 path.vertices.forEach((vertex) => {
                     ctx.beginPath()
                     ctx.arc(vertex.x, vertex.y, vertexSize, 0, τ)
-                    ctx.closePath()
+                    if (closed) {ctx.closePath()}
                     ctx.fill()
                 })
             }

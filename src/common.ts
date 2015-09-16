@@ -26,6 +26,12 @@ module TSP {
             return Math.sqrt(this.lengthSquared)
         }
         
+        
+        toString(): string {
+            let {x, y} = this
+            return `(${x}, ${y})`
+        }
+        
         to(target: Vector): Vector {
             return Vector.relative(this, target)
         }
@@ -45,6 +51,12 @@ module TSP {
             
             return relative.lengthSquared < radiusSquared
         }
+        
+        
+        toString(): string {
+            let {center, radius} = this
+            return `(${center}, ${radius})`
+        }
     }
     
     
@@ -54,26 +66,23 @@ module TSP {
         }
         
         static default = new Size(1000, 1000)
+        
+        toString(): string {
+            let {width, height} = this
+            return `(${width}, ${height})`
+        }
     }
     
     
+    
+    
     export class Path {
-        constructor(public vertices: Vector[]) {
+        constructor(public vertices: Vector[], public closed = true) {
             Object.freeze(this.vertices)
             Object.freeze(this)
         }
         
-        static random(vertex_count: number): Vector[] {
-            let random = Math.random
-            let accumulator = new Array(vertex_count)
-            
-            for (var index = 0; index < vertex_count; index++ ) {
-                accumulator[index] = new Vector(random() * 1000, random() * 1000)
-            }
-            
-            return Object.freeze(accumulator)
-        }
-        
+        /** */
         get length(): number {
             var accumulator = 0
             var length = this.vertices.length
@@ -84,6 +93,14 @@ module TSP {
                     accumulator += vertex.to(next).length
                 }
             })
+            
+            if (this.closed) {
+                let first = this.vertices[0]
+                let last  = this.vertices[length - 1]
+                
+                accumulator += first.to(last).length
+            }
+            
             return accumulator
         }
     }
@@ -105,7 +122,7 @@ module TSP {
     export function performTest(algo: TSPAlgorithm, vertices: Vector[]): TestResult {
         let before = Date.now()
         let solved = algo.solve(vertices)
-        let after = Date.now()
+        let after  = Date.now()
         
         return {
             algorithm: algo,
@@ -114,30 +131,31 @@ module TSP {
         }
     }
     
-    /** Place for extensions to .push() new algorithms */
     export let Heuristics: TSPAlgorithm[] = []
     
     
-    let nestedFromJSON = (json: string) => <number[][]> JSON.parse(json)
-    let verticesFromNested = (nested_array: number[][]) => nested_array.map(([x,y]) => {
-            if (x !== undefined && y !== undefined) {
-                return new Vector(x, y)
-            } else {
-                return null
-            }
-        }).filter(perhaps => perhaps !== null)
+    export function verticesFromJSON(json: string): Vector[] {
+        return JSON.parse(json)
+            .map(([x, y]) => (x !== undefined && y !== undefined) ? new Vector(x, y) : null)
+            .filter(perhaps => perhaps !== null)
+    }
     
-    export let verticesFromJSON = (json: string) => verticesFromNested(nestedFromJSON(json))
-    
-    
-     
+    export function verticesToJSON(vertices: Vector[]): string {
+        return JSON.stringify(vertices.map(vertex => [vertex.x, vertex.y]))
+    }
     
     
-    export function downloadTextFile(text: string) {
+    export function encodeAsDataURL(text: string) {
+        let content = encodeURIComponent(text)
+        return `data:text;charset=utf-8,${content}`
+    }
+    
+    
+    export function downloadTextFile(name: string, content: string) {
         let a = document.createElement('a')
         
-        a.href     = `data:text;charset=utf-8,${text}`
-        a.download = `points.txt`
+        a.href     = encodeAsDataURL(content)
+        a.download = name
         
         a.click()
     }
@@ -175,10 +193,10 @@ module TSP {
         if (length % 2 === 1) {
             return array[(length - 1) / 2]
         } else {
-            let next = array[length / 2]
-            let prev = array[length / 2 - 1]
+            let a = array[length / 2]
+            let b = array[length / 2 - 1]
             
-            return (next + prev) / 2
+            return (a + b) / 2
         }
     }
     
@@ -193,8 +211,32 @@ module TSP {
         return accumulator
     }
     
-    /**Replaces NaN with default_ */
-    export function parseIntSafe(s: string, default_: number) {
+    
+    export function shuffle<T>(array: T[]): T[] {
+        let builder  = array.slice() 
+        let {length} = builder
+        
+        for (let i = length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [builder[i], builder[j]] = [builder[j], builder[i]]
+        }
+        return builder;
+    }
+    
+    export function randomVertices(count: number): Vector[] {
+        let {width: x_range, height: y_range} = Size.default
+        
+        let random      = Math.random
+        let accumulator = new Array(count)
+        
+        for (var index = 0; index < count; index++ ) {
+            accumulator[index] = new Vector(random() * x_range, random() * y_range)
+        }
+        
+        return Object.freeze(accumulator)
+    }
+    
+    export function parseIntSafe(s: string, default_: number = 0) {
         let x = parseInt(s)
         return isNaN(x) ? default_ : x
     }

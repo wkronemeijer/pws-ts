@@ -26,6 +26,10 @@ var TSP;
             enumerable: true,
             configurable: true
         });
+        Vector.prototype.toString = function () {
+            var _a = this, x = _a.x, y = _a.y;
+            return "(" + x + ", " + y + ")";
+        };
         Vector.prototype.to = function (target) {
             return Vector.relative(this, target);
         };
@@ -44,6 +48,10 @@ var TSP;
             var radiusSquared = radius * radius;
             return relative.lengthSquared < radiusSquared;
         };
+        Circle.prototype.toString = function () {
+            var _a = this, center = _a.center, radius = _a.radius;
+            return "(" + center + ", " + radius + ")";
+        };
         return Circle;
     })();
     TSP.Circle = Circle;
@@ -53,24 +61,22 @@ var TSP;
             this.height = height;
             Object.freeze(this);
         }
+        Size.prototype.toString = function () {
+            var _a = this, width = _a.width, height = _a.height;
+            return "(" + width + ", " + height + ")";
+        };
         Size.default = new Size(1000, 1000);
         return Size;
     })();
     TSP.Size = Size;
     var Path = (function () {
-        function Path(vertices) {
+        function Path(vertices, closed) {
+            if (closed === void 0) { closed = true; }
             this.vertices = vertices;
+            this.closed = closed;
             Object.freeze(this.vertices);
             Object.freeze(this);
         }
-        Path.random = function (vertex_count) {
-            var random = Math.random;
-            var accumulator = new Array(vertex_count);
-            for (var index = 0; index < vertex_count; index++) {
-                accumulator[index] = new Vector(random() * 1000, random() * 1000);
-            }
-            return Object.freeze(accumulator);
-        };
         Object.defineProperty(Path.prototype, "length", {
             get: function () {
                 var _this = this;
@@ -82,6 +88,11 @@ var TSP;
                         accumulator += vertex.to(next).length;
                     }
                 });
+                if (this.closed) {
+                    var first = this.vertices[0];
+                    var last = this.vertices[length - 1];
+                    accumulator += first.to(last).length;
+                }
                 return accumulator;
             },
             enumerable: true,
@@ -102,21 +113,28 @@ var TSP;
     }
     TSP.performTest = performTest;
     TSP.Heuristics = [];
-    var nestedFromJSON = function (json) { return JSON.parse(json); };
-    var verticesFromNested = function (nested_array) { return nested_array.map(function (_a) {
-        var x = _a[0], y = _a[1];
-        if (x !== undefined && y !== undefined) {
-            return new Vector(x, y);
-        }
-        else {
-            return null;
-        }
-    }).filter(function (perhaps) { return perhaps !== null; }); };
-    TSP.verticesFromJSON = function (json) { return verticesFromNested(nestedFromJSON(json)); };
-    function downloadTextFile(text) {
+    function verticesFromJSON(json) {
+        return JSON.parse(json)
+            .map(function (_a) {
+            var x = _a[0], y = _a[1];
+            return (x !== undefined && y !== undefined) ? new Vector(x, y) : null;
+        })
+            .filter(function (perhaps) { return perhaps !== null; });
+    }
+    TSP.verticesFromJSON = verticesFromJSON;
+    function verticesToJSON(vertices) {
+        return JSON.stringify(vertices.map(function (vertex) { return [vertex.x, vertex.y]; }));
+    }
+    TSP.verticesToJSON = verticesToJSON;
+    function encodeAsDataURL(text) {
+        var content = encodeURIComponent(text);
+        return "data:text;charset=utf-8," + content;
+    }
+    TSP.encodeAsDataURL = encodeAsDataURL;
+    function downloadTextFile(name, content) {
         var a = document.createElement('a');
-        a.href = "data:text;charset=utf-8," + text;
-        a.download = "points.txt";
+        a.href = encodeAsDataURL(content);
+        a.download = name;
         a.click();
     }
     TSP.downloadTextFile = downloadTextFile;
@@ -153,9 +171,9 @@ var TSP;
             return array[(length - 1) / 2];
         }
         else {
-            var next = array[length / 2];
-            var prev = array[length / 2 - 1];
-            return (next + prev) / 2;
+            var a = array[length / 2];
+            var b = array[length / 2 - 1];
+            return (a + b) / 2;
         }
     }
     TSP.median = median;
@@ -167,7 +185,29 @@ var TSP;
         return accumulator;
     }
     TSP.rangeTo = rangeTo;
+    function shuffle(array) {
+        var builder = array.slice();
+        var length = builder.length;
+        for (var i = length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            _a = [builder[j], builder[i]], builder[i] = _a[0], builder[j] = _a[1];
+        }
+        return builder;
+        var _a;
+    }
+    TSP.shuffle = shuffle;
+    function randomVertices(count) {
+        var _a = Size.default, x_range = _a.width, y_range = _a.height;
+        var random = Math.random;
+        var accumulator = new Array(count);
+        for (var index = 0; index < count; index++) {
+            accumulator[index] = new Vector(random() * x_range, random() * y_range);
+        }
+        return Object.freeze(accumulator);
+    }
+    TSP.randomVertices = randomVertices;
     function parseIntSafe(s, default_) {
+        if (default_ === void 0) { default_ = 0; }
         var x = parseInt(s);
         return isNaN(x) ? default_ : x;
     }
@@ -179,6 +219,7 @@ var TSP;
     var τ = 2 * Math.PI;
     function display(parameters) {
         var path = parameters.path, ctx = parameters.context, _a = parameters.dimensions, width = _a.width, height = _a.height, _b = parameters.edgeWidth, edgeWidth = _b === void 0 ? 2 : _b, _c = parameters.vertexSize, vertexSize = _c === void 0 ? 5 : _c;
+        var closed = path.closed;
         window.requestAnimationFrame(function () {
             ctx.clearRect(0, 0, width, height);
             if (edgeWidth > 0) {
@@ -192,7 +233,9 @@ var TSP;
                 path.vertices.forEach(function (vertex) {
                     ctx.beginPath();
                     ctx.arc(vertex.x, vertex.y, vertexSize, 0, τ);
-                    ctx.closePath();
+                    if (closed) {
+                        ctx.closePath();
+                    }
                     ctx.fill();
                 });
             }
@@ -208,64 +251,92 @@ var TSP;
     TSP.storageKey = 'yolo';
     var Controller = (function () {
         function Controller(parameters) {
-            Object.assign(this, parameters);
+            this.outlets = parameters;
             this.vertices = null;
-            this.previewContext = this.previewArea.getContext('2d');
+            this.iconicPath = null;
+            this.previewContext = this.outlets.previewArea.getContext('2d');
+            this.resultContext = this.outlets.resultArea.getContext('2d');
+            this.resizeCanvases();
+            this.populatePicker();
             this.registerListeners();
             Object.seal(this);
         }
+        Controller.prototype.resizeCanvases = function () {
+            var _a = this.outlets, resultArea = _a.resultArea, previewArea = _a.previewArea, dimensions = _a.dimensions;
+            resultArea.width = previewArea.width = dimensions.width;
+            resultArea.height = previewArea.height = dimensions.height;
+        };
+        Controller.prototype.populatePicker = function () {
+            var _this = this;
+            TSP.Heuristics.forEach(function (algorithm) {
+                var option = document.createElement('option');
+                option.innerText = algorithm.name;
+                _this.outlets.picker.appendChild(option);
+            });
+        };
         Controller.prototype.registerListeners = function () {
             var _this = this;
-            this.importButton.addEventListener('click', function (event) { return _this.importContentFromFile(); }, false);
-            this.exportButton.addEventListener('click', function (event) { return _this.exportContentToFile(); }, false);
-            this.updateButton.addEventListener('click', function (event) { return _this.updatePreview(); }, false);
-            this.generateButton.addEventListener('click', function (event) { return _this.generateRandomVertices(); }, false);
+            var _a = this.outlets, importButton = _a.importButton, exportInputButton = _a.exportInputButton, exportOutputButton = _a.exportOutputButton, updateButton = _a.updateButton, generateButton = _a.generateButton, calculateButton = _a.calculateButton;
+            importButton.addEventListener('click', function (event) { return _this.importContentFromFile(); }, false);
+            exportInputButton.addEventListener('click', function (event) { return _this.exportInputToFile(); }, false);
+            exportOutputButton.addEventListener('click', function (event) { return _this.exportOutputToFile(); }, false);
+            updateButton.addEventListener('click', function (event) { return _this.updatePreview(); }, false);
+            generateButton.addEventListener('click', function (event) { return _this.generateRandomVertices(); }, false);
+            calculateButton.addEventListener('click', function (event) { return _this.calculateResults(); }, false);
             window.addEventListener('beforeunload', function (event) { return _this.saveFiddle(); }, false);
             this.loadFiddle();
         };
         Controller.prototype.generateRandomVertices = function () {
-            var count = TSP.parseIntSafe(this.randomCount.value, 1);
-            var vertices = TSP.Path.random(count);
+            var _a = this.outlets, randomCount = _a.randomCount, fiddleArea = _a.fiddleArea;
+            var count = TSP.parseIntSafe(randomCount.value, 1);
+            var vertices = TSP.randomVertices(count);
             var pairs = vertices.map(function (vertex) { return [Math.round(vertex.x), Math.round(vertex.y)]; });
-            this.fiddleArea.value = JSON.stringify(pairs, null, 4);
+            fiddleArea.value = JSON.stringify(pairs, null, 4);
         };
         Controller.prototype.saveFiddle = function () {
-            window.localStorage.setItem(TSP.storageKey, this.fiddleArea.value);
+            window.localStorage.setItem(TSP.storageKey, this.outlets.fiddleArea.value);
         };
         Controller.prototype.loadFiddle = function () {
             var value = window.localStorage.getItem(TSP.storageKey);
             if (value) {
-                this.fiddleArea.value = value;
+                this.outlets.fiddleArea.value = value;
             }
         };
         Controller.prototype.importContentFromFile = function () {
-            var _this = this;
-            var file = this.fileInput.files[0];
+            var _a = this.outlets, fileInput = _a.fileInput, fiddleArea = _a.fiddleArea;
+            var file = fileInput.files[0];
             var reader = new FileReader();
-            this.fiddleArea.value = "";
-            reader.readAsText(file);
+            fiddleArea.value = "";
             reader.addEventListener('loadend', function (event) {
-                var result = reader.result;
-                _this.fiddleArea.value = result;
+                fiddleArea.value = reader.result;
             }, false);
+            reader.readAsText(file);
         };
-        Controller.prototype.exportContentToFile = function () {
-            TSP.downloadTextFile(this.fiddleArea.value);
+        Controller.prototype.exportInputToFile = function () {
+            if (this.vertices !== null) {
+                TSP.downloadTextFile('input.txt', TSP.verticesToJSON(this.vertices));
+            }
+        };
+        Controller.prototype.exportOutputToFile = function () {
+            if (this.iconicPath !== null) {
+                TSP.downloadTextFile('output.txt', TSP.verticesToJSON(this.iconicPath.vertices));
+            }
         };
         Controller.prototype.updatePreview = function () {
+            var _a = this.outlets, fiddleArea = _a.fiddleArea, importError = _a.importError;
             var error;
             try {
-                this.vertices = TSP.verticesFromJSON(this.fiddleArea.value);
+                this.vertices = TSP.verticesFromJSON(fiddleArea.value);
                 error = false;
             }
             catch (e) {
                 error = true;
             }
             if (error) {
-                this.importError.innerText = 'Malformed input';
+                importError.innerText = 'Malformed input';
             }
             else {
-                this.importError.innerText = '';
+                importError.innerText = '';
                 this.saveFiddle();
                 TSP.display({
                     path: new TSP.Path(this.vertices),
@@ -273,6 +344,30 @@ var TSP;
                     dimensions: TSP.Size.default,
                     edgeWidth: 0,
                 });
+            }
+        };
+        Controller.prototype.calculateResults = function () {
+            var _this = this;
+            this.updatePreview();
+            if (this.vertices !== null) {
+                var _a = this.outlets, picker = _a.picker, testCount = _a.testCount, summary = _a.summary, allResults = _a.allResults;
+                var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === picker.value; })[0];
+                var count = TSP.parseIntSafe(testCount.value, 1);
+                var results = [];
+                this.iconicPath = TSP.performTest(algorithm, this.vertices).path;
+                TSP.rangeTo(count).forEach(function (i) { return results.push(TSP.performTest(algorithm, _this.vertices)); });
+                TSP.display({
+                    path: this.iconicPath,
+                    context: this.resultContext,
+                    dimensions: this.outlets.dimensions,
+                });
+                var timings = results.map(function (result) { return result.time; });
+                summary.innerText =
+                    ("Lengte: " + Math.round(this.iconicPath.length) + "\n") +
+                        ("Mediaan tijd: " + Math.round(TSP.median(timings)) + "ms\n") +
+                        ("Gemiddelde tijd: " + Math.round(TSP.average(timings)) + "ms\n");
+                allResults.innerText = ("Tijden: " + results.map(function (result) { return Math.round(result.time); }).join(', ') + "\n") +
+                    ("Puntenset: " + this.iconicPath.vertices.join(', '));
             }
         };
         return Controller;
@@ -366,7 +461,7 @@ var TSP;
     TSP.Heuristics.push({
         name: "Random",
         solve: function (xy_vertices) {
-            return TSP.Path.random(xy_vertices.length);
+            return TSP.shuffle(xy_vertices);
         }
     });
 })(TSP || (TSP = {}));
@@ -379,48 +474,13 @@ var TSP;
 var TSP;
 (function (TSP) {
     "use strict";
-    function run(params) {
-        var dimensions = params.dimensions, picker = params.picker, calculate = params.calculate, controllerArguments = params.controllerArguments, infoPanel = params.infoPanel, allResults = params.allResults, testCount = params.testCount, canvas = params.canvas;
-        var previewArea = controllerArguments.previewArea;
-        canvas.width = previewArea.width = dimensions.width;
-        canvas.height = previewArea.height = dimensions.height;
-        var context = canvas.getContext('2d');
-        var controller = new TSP.Controller(controllerArguments);
-        function addOptionByName(name) {
-            var option = document.createElement('option');
-            option.innerText = name;
-            picker.appendChild(option);
-        }
-        TSP.Heuristics.forEach(function (algorithm) { return addOptionByName(algorithm.name); });
-        calculate.addEventListener('click', function (event) {
-            controller.updatePreview();
-            var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === picker.value; })[0];
-            var count = TSP.parseIntSafe(testCount.value, 1);
-            var results = [];
-            var iconic_path = TSP.performTest(algorithm, controller.vertices).path;
-            TSP.rangeTo(count).forEach(function (i) { return results.push(TSP.performTest(algorithm, controller.vertices)); });
-            TSP.display({
-                path: iconic_path,
-                context: context,
-                dimensions: dimensions,
-            });
-            var timings = results.map(function (result) { return result.time; });
-            infoPanel.innerText =
-                ("Lengte: " + Math.round(iconic_path.length) + "\n") +
-                    ("Mediaan tijd: " + Math.round(TSP.median(timings)) + "ms\n") +
-                    ("Gemiddelde tijd: " + Math.round(TSP.average(timings)) + "ms\n");
-            allResults.innerText = "Tijden: " + results.map(function (result) { return Math.round(result.time); }).join(', ');
-        }, false);
-    }
-    TSP.run = run;
-})(TSP || (TSP = {}));
-TSP.run({
-    dimensions: new TSP.Size(1000, 1000),
-    infoPanel: document.getElementById('InfoPanel'),
-    allResults: document.getElementById('AllResults'),
-    canvas: document.getElementById('Viewport'),
-    controllerArguments: {
-        exportButton: document.getElementById("ControllerExport"),
+    var controller = new TSP.Controller({
+        dimensions: TSP.Size.default,
+        summary: document.getElementById('InfoPanel'),
+        allResults: document.getElementById('AllResults'),
+        resultArea: document.getElementById('Viewport'),
+        exportOutputButton: document.getElementById('ExportResults'),
+        exportInputButton: document.getElementById("ControllerExport"),
         importButton: document.getElementById("ControllerImport"),
         importError: document.getElementById("InputError"),
         previewArea: document.getElementById("ControllerPreview"),
@@ -429,9 +489,9 @@ TSP.run({
         updateButton: document.getElementById("ControllerUpdate"),
         randomCount: document.getElementById("RandomCount"),
         generateButton: document.getElementById("RandomGenerate"),
-    },
-    picker: document.getElementById('Picker'),
-    calculate: document.getElementById('Calculate'),
-    testCount: document.getElementById('TestCount'),
-});
+        picker: document.getElementById('Picker'),
+        calculateButton: document.getElementById('Calculate'),
+        testCount: document.getElementById('TestCount'),
+    });
+})(TSP || (TSP = {}));
 //# sourceMappingURL=packed.js.map

@@ -4,7 +4,7 @@ module TSP {
     Heuristics.push({
         name: "Random",
         solve(xy_vertices: Vector[]): Vector[] {
-            return Path.random(xy_vertices.length)
+            return shuffle(xy_vertices)
         }
     })
 }

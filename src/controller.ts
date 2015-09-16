@@ -6,13 +6,28 @@ module TSP {
     
     
     export interface ControllerConstructorArguments {
+        dimensions:   Size
+        
+        summary:      HTMLDivElement
+        allResults:   HTMLDivElement
+        
+        picker:       HTMLSelectElement
+        testCount:    HTMLInputElement
+        
+        
         fileInput:      HTMLInputElement
         importButton:   HTMLButtonElement
         fiddleArea:     HTMLTextAreaElement
         importError:    HTMLDivElement
         updateButton:   HTMLButtonElement
-        exportButton:   HTMLButtonElement
+        calculateButton:    HTMLButtonElement
+        
+        exportInputButton:   HTMLButtonElement
+        exportOutputButton: HTMLAnchorElement
+        
         previewArea:    HTMLCanvasElement
+        resultArea:       HTMLCanvasElement
+        
         randomCount:    HTMLInputElement
         generateButton: HTMLButtonElement
     }
@@ -21,102 +36,137 @@ module TSP {
     export let storageKey = 'yolo'
     
     
-    export class Controller implements ControllerConstructorArguments {
-        fileInput:      HTMLInputElement
-        importButton:   HTMLButtonElement
-        fiddleArea:     HTMLTextAreaElement
-        importError:    HTMLDivElement
-        updateButton:   HTMLButtonElement
-        exportButton:   HTMLButtonElement
-        previewArea:    HTMLCanvasElement
-        randomCount:    HTMLInputElement
-        generateButton: HTMLButtonElement
-        
+    export class Controller {
         ///////////////////////
         // "private" members //
         ///////////////////////
         
-        vertices:       Vector[]
+        outlets: ControllerConstructorArguments
+        
+        vertices:   Vector[]
+        iconicPath: Path
+        
         previewContext: CanvasRenderingContext2D
+        resultContext:  CanvasRenderingContext2D
         
         constructor(parameters: ControllerConstructorArguments) {
-            Object.assign(this, parameters)
+            this.outlets    = parameters
+            this.vertices   = null
+            this.iconicPath = null
             
-            this.vertices       = null
-            this.previewContext = this.previewArea.getContext('2d')
+            this.previewContext = this.outlets.previewArea.getContext('2d')
+            this.resultContext  = this.outlets.resultArea.getContext('2d')
             
+            this.resizeCanvases()
+            this.populatePicker()
             this.registerListeners()
             
             Object.seal(this)
         }
         
-        /////////////
-        // Actions //
-        /////////////
+        
+        ////////////////////
+        // Initialization //
+        ////////////////////
+        
+        
+        resizeCanvases() {
+            let {resultArea, previewArea, dimensions} = this.outlets
+            
+            resultArea.width  = previewArea.width  = dimensions.width
+            resultArea.height = previewArea.height = dimensions.height
+        }
+        
+        populatePicker() {
+            TSP.Heuristics.forEach(algorithm => {
+                let option = document.createElement('option')
+                option.innerText = algorithm.name
+                this.outlets.picker.appendChild(option)
+            })
+        }
+        
         
         registerListeners() {
-            this.importButton.addEventListener('click',   event => this.importContentFromFile(),  false)
-            this.exportButton.addEventListener('click',   event => this.exportContentToFile(),    false)
-            this.updateButton.addEventListener('click',   event => this.updatePreview(),          false)
-            this.generateButton.addEventListener('click', event => this.generateRandomVertices(), false)
+            let {importButton, exportInputButton, exportOutputButton, updateButton, generateButton, calculateButton} = this.outlets
+            importButton.addEventListener('click'      , event => this.importContentFromFile() , false)
+            exportInputButton.addEventListener('click' , event => this.exportInputToFile()     , false)
+            exportOutputButton.addEventListener('click', event => this.exportOutputToFile()    , false)
+            updateButton.addEventListener('click'      , event => this.updatePreview()         , false)
+            generateButton.addEventListener('click'    , event => this.generateRandomVertices(), false)
+            calculateButton.addEventListener('click'   , event => this.calculateResults()      , false)
             
             window.addEventListener('beforeunload', event => this.saveFiddle(), false)
             
             this.loadFiddle()
         }
         
+        
+        /////////////
+        // Actions //
+        /////////////
+        
         generateRandomVertices() {
-            let count    = parseIntSafe(this.randomCount.value, 1)
-            let vertices = Path.random(count)
+            let {randomCount, fiddleArea} = this.outlets
+            
+            let count    = parseIntSafe(randomCount.value, 1)
+            let vertices = randomVertices(count)
             let pairs    = vertices.map(vertex => [Math.round(vertex.x) , Math.round(vertex.y)])
             
-            this.fiddleArea.value = JSON.stringify(pairs, null, 4)
+            fiddleArea.value = JSON.stringify(pairs, null, 4)
         }
         
         saveFiddle() {
-            window.localStorage.setItem(storageKey, this.fiddleArea.value)
+            window.localStorage.setItem(storageKey, this.outlets.fiddleArea.value)
         }
         
         loadFiddle() {
             let value = window.localStorage.getItem(storageKey)
-            
             if (value) {
-                this.fiddleArea.value = value
+                this.outlets.fiddleArea.value = value
             }
         }
         
         importContentFromFile() {
-            let file   = this.fileInput.files[0]
+            let {fileInput, fiddleArea} = this.outlets
+            
+            let file   = fileInput.files[0]
             let reader = new FileReader()
             
-            this.fiddleArea.value = ""
+            fiddleArea.value = ""
             
-            reader.readAsText(file)
             reader.addEventListener('loadend', event => {
-                let {result} = reader
-                
-                this.fiddleArea.value = <string>result
+                fiddleArea.value = <string>reader.result
             }, false)
+            reader.readAsText(file)
         }
         
-        exportContentToFile() {
-            downloadTextFile(this.fiddleArea.value)
+        exportInputToFile() {
+            if (this.vertices !== null) {
+                downloadTextFile('input.txt', verticesToJSON(this.vertices))
+            }
+        }
+        
+        exportOutputToFile() {
+            if (this.iconicPath !== null) {
+                downloadTextFile('output.txt', verticesToJSON(this.iconicPath.vertices))
+            }
         }
         
         updatePreview() {
+            let {fiddleArea, importError} = this.outlets
             let error: boolean
             
             try {
-                this.vertices = verticesFromJSON(this.fiddleArea.value)
+                this.vertices = verticesFromJSON(fiddleArea.value)
                 error = false
             } catch (e) {
                 error = true
             }
             
             if (error) {
-                this.importError.innerText = 'Malformed input'
+                importError.innerText = 'Malformed input'
             } else {
-                this.importError.innerText = ''
+                importError.innerText = ''
                 this.saveFiddle()
                 
                 display({
@@ -125,6 +175,37 @@ module TSP {
                     dimensions: Size.default,
                     edgeWidth: 0,
                 })
+            }
+        }
+        
+        calculateResults() {
+            this.updatePreview()
+            
+            if (this.vertices !== null) {
+                let {picker, testCount, summary, allResults} = this.outlets
+                
+                let algorithm   = Heuristics.filter(algo => algo.name === picker.value)[0]
+                let count       = parseIntSafe(testCount.value, 1)
+                let results     = <TestResult[]>[] 
+                
+                this.iconicPath = performTest(algorithm, this.vertices).path
+                rangeTo(count).forEach(i => results.push(performTest(algorithm, this.vertices)))
+                
+                display({
+                    path: this.iconicPath, 
+                    context: this.resultContext, 
+                    dimensions: this.outlets.dimensions,
+                })
+                
+                let timings = results.map(result => result.time)
+                
+                summary.innerText  = 
+                    `Lengte: ${         Math.round(this.iconicPath.length)}\n`   +
+                    `Mediaan tijd: ${   Math.round(median(timings))   }ms\n` +
+                    `Gemiddelde tijd: ${Math.round(average(timings))  }ms\n`
+                
+                allResults.innerText = `Tijden: ${results.map(result => Math.round(result.time)).join(', ')}\n` +
+                    `Puntenset: ${this.iconicPath.vertices.join(', ')}`
             }
         }
     }

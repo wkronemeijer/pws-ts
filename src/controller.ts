@@ -14,7 +14,6 @@ module TSP {
         picker:       HTMLSelectElement
         testCount:    HTMLInputElement
         
-        
         fileInput:      HTMLInputElement
         importButton:   HTMLButtonElement
         fiddleArea:     HTMLTextAreaElement
@@ -60,15 +59,11 @@ module TSP {
             this.resizeCanvases()
             this.populatePicker()
             this.registerListeners()
-            
-            Object.seal(this)
         }
-        
         
         ////////////////////
         // Initialization //
         ////////////////////
-        
         
         resizeCanvases() {
             let {resultArea, previewArea, dimensions} = this.outlets
@@ -85,21 +80,20 @@ module TSP {
             })
         }
         
-        
         registerListeners() {
             let {importButton, exportInputButton, exportOutputButton, updateButton, generateButton, calculateButton} = this.outlets
-            importButton.addEventListener('click'      , event => this.importContentFromFile() , false)
-            exportInputButton.addEventListener('click' , event => this.exportInputToFile()     , false)
+            
+            importButton      .addEventListener('click', event => this.importContentFromFile() , false)
+            exportInputButton .addEventListener('click', event => this.exportInputToFile()     , false)
             exportOutputButton.addEventListener('click', event => this.exportOutputToFile()    , false)
-            updateButton.addEventListener('click'      , event => this.updatePreview()         , false)
-            generateButton.addEventListener('click'    , event => this.generateRandomVertices(), false)
-            calculateButton.addEventListener('click'   , event => this.calculateResults()      , false)
+            updateButton      .addEventListener('click', event => this.updatePreview()         , false)
+            generateButton    .addEventListener('click', event => this.generateRandomVertices(), false)
+            calculateButton   .addEventListener('click', event => this.calculateResults()      , false)
             
             window.addEventListener('beforeunload', event => this.saveFiddle(), false)
             
             this.loadFiddle()
         }
-        
         
         /////////////
         // Actions //

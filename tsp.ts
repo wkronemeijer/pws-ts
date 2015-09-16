@@ -3,6 +3,7 @@
 /// <reference path="./src/controller.ts"/>
 
 /// <reference path="./src/variants/nn.ts"/>
+/// <reference path="./src/variants/nn_alt.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/variants/random.ts"/>
 

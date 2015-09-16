@@ -2,7 +2,7 @@
 
 module TSP {
     Heuristics.push({
-        name: "Nearest Neighbour",
+        name: "Nearest Neighbour, Alt",
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, pool: Vector[]): Vector {
                 let lengths  = pool.map(match => vertex.to(match).lengthSquared)
@@ -16,21 +16,18 @@ module TSP {
                 return vertices
             }
             
-            let result: Vector[] = []
-            var current   = vertices[0]
-            var remaining = vertices.slice(1)
+            let ordered   = [vertices[0]]
+            let unordered = vertices.slice(1)
             
-            result.push(current)
-            while (remaining.length !== 0) {
-                let nearest = findNearest(current, remaining)
-                if (nearest === null) {break}
+            while (unordered.length !== 0) {
+                let current = ordered[0]
+                let nearest = findNearest(current, unordered)
                 
-                current = nearest
-                deleteFrom(remaining, nearest)
-                
-                result.push(current)
+                ordered.unshift(nearest)
+                deleteFrom(unordered, nearest)
             }
-            return result
+            
+            return ordered.reverse()
         }
     })
 }

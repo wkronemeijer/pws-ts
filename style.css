@@ -50,3 +50,7 @@ a {
     color: inherit;
     text-decoration: inherit;
 }
+
+#AllResults {
+    margin-top: 1em;
+}

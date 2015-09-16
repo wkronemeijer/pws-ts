@@ -4,7 +4,6 @@ var TSP;
         function Vector(x, y) {
             this.x = x;
             this.y = y;
-            Object.freeze(this);
         }
         Vector.relative = function (base, target) {
             var dx = target.x - base.x;
@@ -15,6 +14,13 @@ var TSP;
             get: function () {
                 var _a = this, x = _a.x, y = _a.y;
                 return x * x + y * y;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Vector.prototype, "copy", {
+            get: function () {
+                return new Vector(this.x, this.y);
             },
             enumerable: true,
             configurable: true
@@ -40,7 +46,6 @@ var TSP;
         function Circle(center, radius) {
             this.center = center;
             this.radius = radius;
-            Object.freeze(this);
         }
         Circle.prototype.contains = function (point) {
             var _a = this, center = _a.center, radius = _a.radius;
@@ -59,13 +64,12 @@ var TSP;
         function Size(width, height) {
             this.width = width;
             this.height = height;
-            Object.freeze(this);
         }
         Size.prototype.toString = function () {
             var _a = this, width = _a.width, height = _a.height;
             return "(" + width + ", " + height + ")";
         };
-        Size.default = new Size(1000, 1000);
+        Size.default = Object.freeze(new Size(1000, 1000));
         return Size;
     })();
     TSP.Size = Size;
@@ -74,8 +78,6 @@ var TSP;
             if (closed === void 0) { closed = true; }
             this.vertices = vertices;
             this.closed = closed;
-            Object.freeze(this.vertices);
-            Object.freeze(this);
         }
         Object.defineProperty(Path.prototype, "length", {
             get: function () {
@@ -150,6 +152,17 @@ var TSP;
         }
     }
     TSP.removeFrom = removeFrom;
+    function deleteFrom(array, item) {
+        var index = array.indexOf(item);
+        if (index !== -1) {
+            array.splice(index, 1);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    TSP.deleteFrom = deleteFrom;
     function average(array) {
         if (array.length > 1) {
             var sum = array.reduce(function (a, b) { return a + b; });
@@ -259,7 +272,6 @@ var TSP;
             this.resizeCanvases();
             this.populatePicker();
             this.registerListeners();
-            Object.seal(this);
         }
         Controller.prototype.resizeCanvases = function () {
             var _a = this.outlets, resultArea = _a.resultArea, previewArea = _a.previewArea, dimensions = _a.dimensions;
@@ -380,13 +392,13 @@ var TSP;
     TSP.Heuristics.push({
         name: "Nearest Neighbour",
         solve: function (vertices) {
-            function findNearest(vertex, remainingVertices) {
-                var lengths = remainingVertices.map(function (match) { return vertex.to(match).lengthSquared; });
-                var minLength = Math.min.apply(null, lengths);
-                var index = lengths.indexOf(minLength);
-                return remainingVertices[index];
+            function findNearest(vertex, pool) {
+                var lengths = pool.map(function (match) { return vertex.to(match).lengthSquared; });
+                var shortest = Math.min.apply(null, lengths);
+                var index = lengths.indexOf(shortest);
+                return pool[index];
             }
-            if (vertices.length < 3) {
+            if (vertices.length < 4) {
                 return vertices;
             }
             var result = [];
@@ -398,9 +410,9 @@ var TSP;
                 if (nearest === null) {
                     break;
                 }
-                result.push(nearest);
                 current = nearest;
-                remaining = TSP.removeFrom(remaining, nearest);
+                TSP.deleteFrom(remaining, nearest);
+                result.push(current);
             }
             return result;
         }
@@ -410,9 +422,36 @@ var TSP;
 var TSP;
 (function (TSP) {
     TSP.Heuristics.push({
+        name: "Nearest Neighbour, Alt",
+        solve: function (vertices) {
+            function findNearest(vertex, pool) {
+                var lengths = pool.map(function (match) { return vertex.to(match).lengthSquared; });
+                var shortest = Math.min.apply(null, lengths);
+                var index = lengths.indexOf(shortest);
+                return pool[index];
+            }
+            if (vertices.length < 4) {
+                return vertices;
+            }
+            var ordered = [vertices[0]];
+            var unordered = vertices.slice(1);
+            while (unordered.length !== 0) {
+                var current = ordered[0];
+                var nearest = findNearest(current, unordered);
+                ordered.unshift(nearest);
+                TSP.deleteFrom(unordered, nearest);
+            }
+            return ordered.reverse();
+        }
+    });
+})(TSP || (TSP = {}));
+/// <reference path="./../common.ts"/>
+var TSP;
+(function (TSP) {
+    TSP.Heuristics.push({
         name: "Radius",
         solve: function (vertices) {
-            function findNearest(vertex, remainingVertices) {
+            function findNearest(vertex, pool) {
                 var start = 1;
                 var stop = 2 * 1000;
                 var step = stop / 10;
@@ -420,7 +459,7 @@ var TSP;
                 var matches = [];
                 while (matches.length === 0) {
                     var circle = new TSP.Circle(vertex, radius);
-                    remainingVertices.forEach(function (remainingVertex) {
+                    pool.forEach(function (remainingVertex) {
                         if (circle.contains(remainingVertex)) {
                             matches.push(remainingVertex);
                         }
@@ -431,11 +470,11 @@ var TSP;
                     }
                 }
                 var lengths = matches.map(function (match) { return vertex.to(match).lengthSquared; });
-                var minLength = Math.min.apply(null, lengths);
-                var index = lengths.indexOf(minLength);
+                var shortest = Math.min.apply(null, lengths);
+                var index = lengths.indexOf(shortest);
                 return matches[index];
             }
-            if (vertices.length <= 3) {
+            if (vertices.length < 4) {
                 return vertices;
             }
             var result = [];
@@ -460,15 +499,14 @@ var TSP;
 (function (TSP) {
     TSP.Heuristics.push({
         name: "Random",
-        solve: function (xy_vertices) {
-            return TSP.shuffle(xy_vertices);
-        }
+        solve: function (vertices) { return TSP.shuffle(vertices); }
     });
 })(TSP || (TSP = {}));
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
 /// <reference path="./src/controller.ts"/>
 /// <reference path="./src/variants/nn.ts"/>
+/// <reference path="./src/variants/nn_alt.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/variants/random.ts"/>
 var TSP;

@@ -6,9 +6,7 @@ interface HTMLAnchorElement {
 
 module TSP {
     export class Vector {
-        constructor(public x: number, public y: number) {
-            Object.freeze(this)
-        }
+        constructor(public x: number, public y: number) {}
         
         static relative(base: Vector, target: Vector): Vector {
             let dx = target.x - base.x
@@ -20,6 +18,10 @@ module TSP {
         get lengthSquared(): number {
             let {x, y} = this
             return x*x + y*y
+        }
+        
+        get copy() {
+            return new Vector(this.x, this.y)
         }
         
         get length(): number {
@@ -39,9 +41,7 @@ module TSP {
     
     
     export class Circle {
-        constructor(public center: Vector, public radius: number) {
-            Object.freeze(this)
-        }
+        constructor(public center: Vector, public radius: number) {}
         
         contains(point: Vector) {
             let {center, radius} = this
@@ -61,11 +61,9 @@ module TSP {
     
     
     export class Size {
-        constructor(public width: number, public height: number) {
-            Object.freeze(this)
-        }
+        constructor(public width: number, public height: number) {}
         
-        static default = new Size(1000, 1000)
+        static default = Object.freeze(new Size(1000, 1000))
         
         toString(): string {
             let {width, height} = this
@@ -77,10 +75,7 @@ module TSP {
     
     
     export class Path {
-        constructor(public vertices: Vector[], public closed = true) {
-            Object.freeze(this.vertices)
-            Object.freeze(this)
-        }
+        constructor(public vertices: Vector[], public closed = true) {}
         
         /** */
         get length(): number {
@@ -170,6 +165,16 @@ module TSP {
             return before.concat(after)
         } else {
             return array
+        }
+    }
+    
+    export function deleteFrom<T>(array: T[], item: T): boolean {
+        let index = array.indexOf(item)
+        if (index !== -1) {
+            array.splice(index, 1)
+            return true
+        } else {
+            return false
         }
     }
     

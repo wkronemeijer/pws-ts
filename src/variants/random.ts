@@ -3,8 +3,6 @@
 module TSP {
     Heuristics.push({
         name: "Random",
-        solve(xy_vertices: Vector[]): Vector[] {
-            return shuffle(xy_vertices)
-        }
+        solve: vertices => shuffle(vertices)
     })
 }

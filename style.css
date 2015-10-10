@@ -65,6 +65,8 @@ input, button, select {
     font: inherit;
     font-size: inherit;
     
+    padding: 2px 5px;
+    
     background-color: rgba(0,0,0,0);
     color: inherit;
     

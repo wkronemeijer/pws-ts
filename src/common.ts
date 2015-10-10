@@ -10,12 +10,6 @@ module TSP {
             Object.freeze(this)
         }
         
-        static relative(base: Vector, target: Vector): Vector {
-            let dx = target.x - base.x
-            let dy = target.y - base.y
-            
-            return new Vector(dx, dy)
-        }
         
         get lengthSquared(): number {
             let {x, y} = this
@@ -32,12 +26,25 @@ module TSP {
         
         
         toString(): string {
-            let {x, y} = this
-            return `(${x}, ${y})`
+            return `(${this.x}, ${this.y})`
         }
         
         to(target: Vector): Vector {
-            return Vector.relative(this, target)
+            let dx = target.x - this.x
+            let dy = target.y - this.y
+            
+            return new Vector(dx, dy)
+        }
+        
+        dot(operand: Vector) {
+             return this.x * operand.x + this.y * operand.y
+        }
+        
+        angleWith(operand: Vector): number {
+            let dot_product    = this.dot(operand)
+            let length_product = this.length * operand.length
+            
+            return Math.acos(dot_product / length_product)
         }
     }
     

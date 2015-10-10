@@ -4,6 +4,7 @@ var TSP;
         function Vector(x, y) {
             this.x = x;
             this.y = y;
+            Object.freeze(this);
         }
         Vector.relative = function (base, target) {
             var dx = target.x - base.x;
@@ -38,6 +39,14 @@ var TSP;
         };
         Vector.prototype.to = function (target) {
             return Vector.relative(this, target);
+        };
+        Vector.prototype.dot = function (operand) {
+            return this.x * operand.x + this.y * operand.y;
+        };
+        Vector.prototype.angleWith = function (operand) {
+            var dot_product = this.dot(operand);
+            var length_product = this.length * operand.length;
+            return Math.acos(dot_product / length_product);
         };
         return Vector;
     })();

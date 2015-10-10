@@ -12,10 +12,6 @@ module TSP {
                 return pool[index]
             }
             
-            if (vertices.length < 4) {
-                return vertices
-            }
-            
             let result: Vector[] = []
             var current   = vertices[0]
             var remaining = vertices.slice(1)

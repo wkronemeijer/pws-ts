@@ -212,12 +212,13 @@ module TSP {
                 let $ = Math.round
                 
                 summary.innerText  = 
-                    `Lengte: ${       $(this.iconicPath.length)   }\n`   +
-                    `Geopt. lengte: ${$(this.optimizedPath.length)}`
+                    `Lengte: ${       $(this.iconicPath.length)   }\n` +
+                    `Geopt. lengte: ${$(this.optimizedPath.length)}\n` +
+                    `Winst: ${$((1 - this.optimizedPath.length / this.iconicPath.length) * 100)}%`
                 
                 allResults.innerText = 
-                    `Algoritme uitvoertijden: (Q₂: ${    $(median(timings))    }) ${clip(timings.join(", ")    , maxLineLength / 3, "...")} \n` +
-                    `Optimalisatie uitvoertijden: (Q₂: ${$(median(opt_timings))}) ${clip(opt_timings.join(", "), maxLineLength / 3, "...")} \n\n` +
+                    `Algoritme uitvoertijden: (Q₂: ${    $(median(timings))    })\n${clip(timings.join(", ")    , maxLineLength / 3, "...")} \n` +
+                    `Optimalisatie uitvoertijden: (Q₂: ${$(median(opt_timings))})\n${clip(opt_timings.join(", "), maxLineLength / 3, "...")} \n\n` +
                     `Puntenset: ${clip(this.optimizedPath.vertices.join(", "), maxLineLength, "...")}`
                 
                 display({

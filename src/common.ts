@@ -5,6 +5,8 @@ interface HTMLAnchorElement {
 
 
 module TSP {
+    "use strict"
+    
     export class Vector {
         constructor(public x: number, public y: number) {}
         
@@ -78,30 +80,10 @@ module TSP {
     
     
     export class Path {
-        constructor(public vertices: Vector[], public closed = true) {
-            Object.freeze(this.vertices)
-        }
+        constructor(public vertices: Vector[], public closed = true) {}
         
-        /** */
         get length(): number {
-            var accumulator = 0
-            var length = this.vertices.length
-            
-            this.vertices.forEach((vertex, index) => {
-                if (index + 1 < length) {
-                    let next = this.vertices[index + 1]
-                    accumulator += vertex.to(next).length
-                }
-            })
-            
-            if (this.closed) {
-                let first = this.vertices[0]
-                let last  = this.vertices[length - 1]
-                
-                accumulator += first.to(last).length
-            }
-            
-            return accumulator
+            return totalLength(this.vertices, this.closed)
         }
     }
     
@@ -271,4 +253,32 @@ module TSP {
     
     export const maxLineLength = 160 //characters
     
+    
+    export function swap<T>(array: T[], index0: number, index1: number): T[] {
+        let accumulator = array.slice();
+        [accumulator[index1], accumulator[index0]] = [accumulator[index0], accumulator[index1]];
+        return accumulator;
+    }
+    
+    
+    export function totalLength(vertices: Vector[], closed = true): number {
+        var accumulator = 0
+        var length = vertices.length
+        
+       vertices.forEach((vertex, index) => {
+            if (index + 1 < length) {
+                let next = vertices[index + 1]
+                accumulator += vertex.to(next).length
+            }
+        })
+        
+        if (closed) {
+            let first = vertices[0]
+            let last  = vertices[length - 1]
+            
+            accumulator += first.to(last).length
+        }
+        
+        return accumulator
+    }
 }

@@ -30,7 +30,7 @@ module TSP {
                 ctx.lineWidth = edgeWidth
                 ctx.beginPath()
                 path.vertices.forEach((vertex) => ctx.lineTo(vertex.x, vertex.y))
-                ctx.closePath()
+                if (closed) {ctx.closePath()}
                 ctx.stroke()
             }
             
@@ -38,7 +38,7 @@ module TSP {
                 path.vertices.forEach((vertex) => {
                     ctx.beginPath()
                     ctx.arc(vertex.x, vertex.y, vertexSize, 0, τ)
-                    if (closed) {ctx.closePath()}
+                    ctx.closePath()
                     ctx.fill()
                 })
             }

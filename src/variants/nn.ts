@@ -1,6 +1,9 @@
 /// <reference path="./../common.ts"/>
 
 module TSP {
+    "use strict"
+    
+    
     Heuristics.push({
         name: "Naaste Buur",
         solve(vertices: Vector[]): Vector[] {

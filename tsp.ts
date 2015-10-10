@@ -2,13 +2,16 @@
 /// <reference path="./src/output.ts"/>
 /// <reference path="./src/controller.ts"/>
 
-/// <reference path="./src/variants/nn.ts"/>
+/// <reference path="./src/variants/id.ts"/>
+/// <reference path="./src/variants/greatest_angle.ts"/>
 /// <reference path="./src/variants/nn_alt.ts"/>
-/// <reference path="./src/variants/radius.ts"/>
+/// <reference path="./src/variants/nn.ts"/>
 /// <reference path="./src/variants/random.ts"/>
+/// <reference path="./src/variants/radius.ts"/>
 
-/// <reference path="./src/opt-variants/none.ts"/>
 /// <reference path="./src/opt-variants/2-opt.ts"/>
+/// <reference path="./src/opt-variants/none.ts"/>
+
 
 
 module TSP {

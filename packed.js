@@ -1,5 +1,6 @@
 var TSP;
 (function (TSP) {
+    "use strict";
     var Vector = (function () {
         function Vector(x, y) {
             this.x = x;
@@ -81,25 +82,10 @@ var TSP;
             if (closed === void 0) { closed = true; }
             this.vertices = vertices;
             this.closed = closed;
-            Object.freeze(this.vertices);
         }
         Object.defineProperty(Path.prototype, "length", {
             get: function () {
-                var _this = this;
-                var accumulator = 0;
-                var length = this.vertices.length;
-                this.vertices.forEach(function (vertex, index) {
-                    if (index + 1 < length) {
-                        var next = _this.vertices[index + 1];
-                        accumulator += vertex.to(next).length;
-                    }
-                });
-                if (this.closed) {
-                    var first = this.vertices[0];
-                    var last = this.vertices[length - 1];
-                    accumulator += first.to(last).length;
-                }
-                return accumulator;
+                return totalLength(this.vertices, this.closed);
             },
             enumerable: true,
             configurable: true
@@ -241,6 +227,31 @@ var TSP;
     }
     TSP.clip = clip;
     TSP.maxLineLength = 160;
+    function swap(array, index0, index1) {
+        var accumulator = array.slice();
+        _a = [accumulator[index0], accumulator[index1]], accumulator[index1] = _a[0], accumulator[index0] = _a[1];
+        return accumulator;
+        var _a;
+    }
+    TSP.swap = swap;
+    function totalLength(vertices, closed) {
+        if (closed === void 0) { closed = true; }
+        var accumulator = 0;
+        var length = vertices.length;
+        vertices.forEach(function (vertex, index) {
+            if (index + 1 < length) {
+                var next = vertices[index + 1];
+                accumulator += vertex.to(next).length;
+            }
+        });
+        if (closed) {
+            var first = vertices[0];
+            var last = vertices[length - 1];
+            accumulator += first.to(last).length;
+        }
+        return accumulator;
+    }
+    TSP.totalLength = totalLength;
 })(TSP || (TSP = {}));
 /// <reference path="../tsp.ts"/>
 var TSP;
@@ -255,16 +266,16 @@ var TSP;
                 ctx.lineWidth = edgeWidth;
                 ctx.beginPath();
                 path.vertices.forEach(function (vertex) { return ctx.lineTo(vertex.x, vertex.y); });
-                ctx.closePath();
+                if (closed) {
+                    ctx.closePath();
+                }
                 ctx.stroke();
             }
             if (vertexSize > 0) {
                 path.vertices.forEach(function (vertex) {
                     ctx.beginPath();
                     ctx.arc(vertex.x, vertex.y, vertexSize, 0, τ);
-                    if (closed) {
-                        ctx.closePath();
-                    }
+                    ctx.closePath();
                     ctx.fill();
                 });
             }
@@ -403,10 +414,11 @@ var TSP;
                 var $ = Math.round;
                 summary.innerText =
                     ("Lengte: " + $(this.iconicPath.length) + "\n") +
-                        ("Geopt. lengte: " + $(this.optimizedPath.length));
+                        ("Geopt. lengte: " + $(this.optimizedPath.length) + "\n") +
+                        ("Winst: " + $((1 - this.optimizedPath.length / this.iconicPath.length) * 100) + "%");
                 allResults.innerText =
-                    ("Algoritme uitvoertijden: (Q\u2082: " + $(TSP.median(timings)) + ") " + TSP.clip(timings.join(", "), TSP.maxLineLength / 3, "...") + " \n") +
-                        ("Optimalisatie uitvoertijden: (Q\u2082: " + $(TSP.median(opt_timings)) + ") " + TSP.clip(opt_timings.join(", "), TSP.maxLineLength / 3, "...") + " \n\n") +
+                    ("Algoritme uitvoertijden: (Q\u2082: " + $(TSP.median(timings)) + ")\n" + TSP.clip(timings.join(", "), TSP.maxLineLength / 3, "...") + " \n") +
+                        ("Optimalisatie uitvoertijden: (Q\u2082: " + $(TSP.median(opt_timings)) + ")\n" + TSP.clip(opt_timings.join(", "), TSP.maxLineLength / 3, "...") + " \n\n") +
                         ("Puntenset: " + TSP.clip(this.optimizedPath.vertices.join(", "), TSP.maxLineLength, "..."));
                 TSP.display({
                     path: this.optimizedPath,
@@ -422,6 +434,29 @@ var TSP;
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
+    "use strict";
+    TSP.Heuristics.push({
+        name: TSP.identityOptimizerName,
+        solve: function (vertices) { return vertices; }
+    });
+})(TSP || (TSP = {}));
+/// <reference path="./../common.ts"/>
+var TSP;
+(function (TSP) {
+    "use strict";
+    TSP.Heuristics.push({
+        name: "Grootste Hoek",
+        solve: function (vertices) {
+            // stub
+            return vertices;
+        }
+    });
+})(TSP || (TSP = {}));
+/// <reference path="./../common.ts"/>
+/// <reference path="./../common.ts"/>
+var TSP;
+(function (TSP) {
+    "use strict";
     TSP.Heuristics.push({
         name: "Naaste Buur",
         solve: function (vertices) {
@@ -444,9 +479,18 @@ var TSP;
     });
 })(TSP || (TSP = {}));
 /// <reference path="./../common.ts"/>
+var TSP;
+(function (TSP) {
+    "use strict";
+    TSP.Heuristics.push({
+        name: "Willekeurig",
+        solve: function (vertices) { return TSP.shuffle(vertices); }
+    });
+})(TSP || (TSP = {}));
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
+    "use strict";
     TSP.Heuristics.push({
         name: "Straal",
         solve: function (vertices) {
@@ -493,9 +537,55 @@ var TSP;
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
-    TSP.Heuristics.push({
-        name: "Willekeurig",
-        solve: function (vertices) { return TSP.shuffle(vertices); }
+    "use strict";
+    function $(vertices) {
+        return new TSP.Path(vertices);
+    }
+    TSP.Optimizers.push({
+        name: "2-Opt",
+        solve: function (vertices) {
+            /*let length     = vertices.length
+            let best_route = vertices.slice()
+            
+            again:
+            for (let i = 1; i < length - 3; i++ ) {
+                for (let j = i + 2; j < length - 1; j++) {
+                    let a = best_route[i]
+                    let b = best_route[i + 1]
+                    let c = best_route[j]
+                    let d = best_route[j + 1]
+                    
+                    let before = a.to(b).lengthSquared + c.to(d).lengthSquared
+                    let after  = a.to(c).lengthSquared + b.to(d).lengthSquared
+                    
+                    if (after < before) {
+                        best_route = swap(best_route, i+1, j)
+                        continue again
+                    }
+                }
+            }
+            
+            return best_route*/
+            var length = vertices.length;
+            var best_route = vertices.slice();
+            var stale = true;
+            again: do {
+                stale = true;
+                for (var i = 0; i < length; i++) {
+                    for (var j = i + 1; j < length; j++) {
+                        var new_route = [].concat(best_route.slice(0, i), best_route.slice(i, j).reverse(), best_route.slice(j));
+                        var before = TSP.totalLength(best_route);
+                        var after = TSP.totalLength(new_route);
+                        if (after < before) {
+                            best_route = new_route;
+                            stale = false;
+                            continue again;
+                        }
+                    }
+                }
+            } while (!stale);
+            return best_route;
+        }
     });
 })(TSP || (TSP = {}));
 /// <reference path="./../common.ts"/>
@@ -507,27 +597,17 @@ var TSP;
         solve: function (vertices) { return vertices; }
     });
 })(TSP || (TSP = {}));
-/// <reference path="./../common.ts"/>
-var TSP;
-(function (TSP) {
-    "use strict";
-    TSP.Optimizers.push({
-        name: "2-Opt",
-        solve: function (vertices) {
-            /// let's make the magic happen ;)
-            return vertices.slice().reverse();
-        }
-    });
-})(TSP || (TSP = {}));
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
 /// <reference path="./src/controller.ts"/>
-/// <reference path="./src/variants/nn.ts"/>
+/// <reference path="./src/variants/id.ts"/>
+/// <reference path="./src/variants/greatest_angle.ts"/>
 /// <reference path="./src/variants/nn_alt.ts"/>
-/// <reference path="./src/variants/radius.ts"/>
+/// <reference path="./src/variants/nn.ts"/>
 /// <reference path="./src/variants/random.ts"/>
-/// <reference path="./src/opt-variants/none.ts"/>
+/// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/opt-variants/2-opt.ts"/>
+/// <reference path="./src/opt-variants/none.ts"/>
 var TSP;
 (function (TSP) {
     "use strict";

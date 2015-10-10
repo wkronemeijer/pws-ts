@@ -1,6 +1,6 @@
 body {
     margin: 0px;
-    font-family: sans-serif;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     font-size: 14px;
 }
 
@@ -53,4 +53,35 @@ a {
 
 #AllResults {
     margin-top: 1em;
+}
+
+#wrapper {
+    width: 750px;
+    margin: auto;
+}
+
+
+input, button, select {
+    font: inherit;
+    font-size: inherit;
+    
+    background-color: rgba(0,0,0,0);
+    color: inherit;
+    
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    box-shadow: 0px 1px #aaa;
+    
+    outline: none;
+}
+
+input:hover, button:hover, select:hover {
+    cursor: pointer
+}
+
+button:active, input:active, select:active {
+    transform: translate(0, 1px);
+    box-shadow: none;
+    
+    
 }

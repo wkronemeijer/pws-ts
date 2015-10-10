@@ -9,8 +9,8 @@
 /// <reference path="./src/variants/random.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
 
-/// <reference path="./src/opt-variants/2-opt.ts"/>
 /// <reference path="./src/opt-variants/none.ts"/>
+/// <reference path="./src/opt-variants/2-opt.ts"/>
 
 
 

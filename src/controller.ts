@@ -183,6 +183,7 @@ module TSP {
         
         calculateResults() {
             this.updatePreview()
+            console.clear()
             
             if (this.vertices !== null) {
                 let {algorithmPicker, optimizationPicker, testCount, summary, allResults} = this.outlets

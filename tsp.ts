@@ -39,3 +39,8 @@ module TSP {
         testCount:          <HTMLInputElement>   document.getElementById("TestCount"),
     })
 }
+
+
+function vector(x: number, y: number): TSP.Vector {
+    return new TSP.Vector(x, y)
+}

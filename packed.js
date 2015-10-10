@@ -44,6 +44,12 @@ var TSP;
             var length_product = this.length * operand.length;
             return Math.acos(dot_product / length_product);
         };
+        Vector.prototype.signedAngleWith = function (point) {
+            return this.angleWith(point) * Math.sign(point.y * this.x - point.x * this.y);
+        };
+        Vector.origin = new Vector(0, 0);
+        Vector.e_x = new Vector(1, 0);
+        Vector.e_y = new Vector(0, 1);
         return Vector;
     })();
     TSP.Vector = Vector;
@@ -155,6 +161,12 @@ var TSP;
         }
     }
     TSP.deleteFrom = deleteFrom;
+    function complement(source, toBeRemoved) {
+        var array = source.slice();
+        toBeRemoved.forEach(function (target) { return deleteFrom(array, target); });
+        return array;
+    }
+    TSP.complement = complement;
     function average(array) {
         if (array.length > 1) {
             var sum = array.reduce(function (a, b) { return a + b; });
@@ -252,6 +264,17 @@ var TSP;
         return accumulator;
     }
     TSP.totalLength = totalLength;
+    function clamp(min, value, max) {
+        return Math.min(Math.max(min, value), max);
+    }
+    TSP.clamp = clamp;
+    function randomElementFrom(array) {
+        var length = array.length;
+        var random = Math.random();
+        var index = Math.floor(random * length);
+        return array[index];
+    }
+    TSP.randomElementFrom = randomElementFrom;
 })(TSP || (TSP = {}));
 /// <reference path="../tsp.ts"/>
 var TSP;
@@ -393,6 +416,7 @@ var TSP;
         };
         Controller.prototype.calculateResults = function () {
             this.updatePreview();
+            console.clear();
             if (this.vertices !== null) {
                 var _a = this.outlets, algorithmPicker = _a.algorithmPicker, optimizationPicker = _a.optimizationPicker, testCount = _a.testCount, summary = _a.summary, allResults = _a.allResults;
                 var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === algorithmPicker.value; })[0];
@@ -444,11 +468,48 @@ var TSP;
 var TSP;
 (function (TSP) {
     "use strict";
+    function findLeftmostPoint(point, candidates) {
+        var basis = TSP.randomElementFrom(candidates);
+        console.log(candidates.indexOf(basis));
+        var angles = candidates.map(function (candidate) {
+            var basis_edge = point.to(basis);
+            var candidate_edge = point.to(candidate);
+            return basis_edge.signedAngleWith(candidate_edge);
+        });
+        var leftmost_angle = Math.min.apply(Math, (angles));
+        var leftmost_point = candidates[angles.indexOf(leftmost_angle)];
+        return leftmost_point;
+    }
+    TSP.findLeftmostPoint = findLeftmostPoint;
+    function convexHull(vertices) {
+        // jarvis march for now, nice and simple
+        var x_vertices = vertices.map(function (vertex) { return vertex.x; });
+        var minimum_x = Math.min.apply(Math, x_vertices);
+        var start = vertices[x_vertices.indexOf(minimum_x)];
+        var accumulator = [start];
+        while (true) {
+            var cursor = accumulator[accumulator.length - 1];
+            var remaining = TSP.removeFrom(vertices, cursor);
+            var chosen_candidate = findLeftmostPoint(cursor, remaining);
+            if (chosen_candidate === undefined) {
+                var foo = remaining.join(", ");
+                debugger;
+            }
+            console.log(cursor, remaining.join(", "), chosen_candidate);
+            console.log("\n");
+            if (chosen_candidate === start) {
+                break;
+            }
+            accumulator.push(chosen_candidate);
+        }
+        return accumulator;
+    }
+    TSP.convexHull = convexHull;
     TSP.Heuristics.push({
         name: "Grootste Hoek",
         solve: function (vertices) {
-            // stub
-            return vertices;
+            var hull = convexHull(vertices);
+            return hull;
         }
     });
 })(TSP || (TSP = {}));
@@ -538,6 +599,15 @@ var TSP;
 var TSP;
 (function (TSP) {
     "use strict";
+    TSP.Optimizers.push({
+        name: TSP.identityOptimizerName,
+        solve: function (vertices) { return vertices; }
+    });
+})(TSP || (TSP = {}));
+/// <reference path="./../common.ts"/>
+var TSP;
+(function (TSP) {
+    "use strict";
     function $(vertices) {
         return new TSP.Path(vertices);
     }
@@ -588,15 +658,6 @@ var TSP;
         }
     });
 })(TSP || (TSP = {}));
-/// <reference path="./../common.ts"/>
-var TSP;
-(function (TSP) {
-    "use strict";
-    TSP.Optimizers.push({
-        name: TSP.identityOptimizerName,
-        solve: function (vertices) { return vertices; }
-    });
-})(TSP || (TSP = {}));
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
 /// <reference path="./src/controller.ts"/>
@@ -606,8 +667,8 @@ var TSP;
 /// <reference path="./src/variants/nn.ts"/>
 /// <reference path="./src/variants/random.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
-/// <reference path="./src/opt-variants/2-opt.ts"/>
 /// <reference path="./src/opt-variants/none.ts"/>
+/// <reference path="./src/opt-variants/2-opt.ts"/>
 var TSP;
 (function (TSP) {
     "use strict";
@@ -632,4 +693,7 @@ var TSP;
         testCount: document.getElementById("TestCount"),
     });
 })(TSP || (TSP = {}));
+function vector(x, y) {
+    return new TSP.Vector(x, y);
+}
 //# sourceMappingURL=packed.js.map

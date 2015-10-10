@@ -10,6 +10,11 @@ module TSP {
     export class Vector {
         constructor(public x: number, public y: number) {}
         
+        static origin = new Vector(0, 0);
+        static e_x = new Vector(1, 0);
+        static e_y = new Vector(0, 1);
+        
+        
         get lengthSquared(): number {
             let {x, y} = this
             return x*x + y*y
@@ -44,6 +49,11 @@ module TSP {
             let length_product = this.length * operand.length
             
             return Math.acos(dot_product / length_product)
+        }
+        
+        /**Clockwise is negative, counterclockwise is positive */
+        signedAngleWith(point: Vector): number {
+            return this.angleWith(point) * Math.sign(point.y * this.x - point.x * this.y )
         }
     }
     
@@ -170,6 +180,14 @@ module TSP {
         }
     }
     
+    export function complement<T>(source: T[], toBeRemoved: T[]): T[] {
+        let array = source.slice()
+        toBeRemoved.forEach(target => deleteFrom(array, target))
+        return array
+    }
+    
+    
+    
     
     export function average(array: number[]): number {
         if (array.length > 1) {
@@ -284,5 +302,14 @@ module TSP {
     
     export function clamp(min: number, value: number, max: number): number {
         return Math.min(Math.max(min, value), max)
+    }
+    
+    
+    export function randomElementFrom<T>(array: T[]): T {
+        let length = array.length
+        let random = Math.random()
+        let index  = Math.floor(random * length)
+        
+        return array[index]
     }
 }

@@ -2,7 +2,7 @@
 
 module TSP {
     Heuristics.push({
-        name: "Random",
+        name: "Willekeurig",
         solve: vertices => shuffle(vertices)
     })
 }

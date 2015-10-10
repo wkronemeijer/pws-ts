@@ -275,7 +275,7 @@ var TSP;
             this.previewContext = this.outlets.previewArea.getContext('2d');
             this.resultContext = this.outlets.resultArea.getContext('2d');
             this.resizeCanvases();
-            this.populateAlgorithmPicker();
+            this.populatePickers();
             this.registerListeners();
         }
         Controller.prototype.resizeCanvases = function () {
@@ -283,12 +283,17 @@ var TSP;
             resultArea.width = previewArea.width = dimensions.width;
             resultArea.height = previewArea.height = dimensions.height;
         };
-        Controller.prototype.populateAlgorithmPicker = function () {
+        Controller.prototype.populatePickers = function () {
             var _this = this;
             TSP.Heuristics.forEach(function (algorithm) {
                 var option = document.createElement('option');
                 option.innerText = algorithm.name;
                 _this.outlets.algorithmPicker.appendChild(option);
+            });
+            TSP.OptHeuristics.forEach(function (optAlgorithm) {
+                var option = document.createElement('option');
+                option.innerText = optAlgorithm.name;
+                _this.outlets.optAlgorithmPicker.appendChild(option);
             });
         };
         Controller.prototype.registerListeners = function () {
@@ -395,7 +400,7 @@ var TSP;
 var TSP;
 (function (TSP) {
     TSP.Heuristics.push({
-        name: "Nearest Neighbour",
+        name: "Naaste Buur",
         solve: function (vertices) {
             function findNearest(vertex, pool) {
                 var lengths = pool.map(function (match) { return vertex.to(match).lengthSquared; });
@@ -420,7 +425,7 @@ var TSP;
 var TSP;
 (function (TSP) {
     TSP.Heuristics.push({
-        name: "Radius",
+        name: "Straal",
         solve: function (vertices) {
             function findNearest(vertex, pool) {
                 var start = 1;
@@ -466,7 +471,7 @@ var TSP;
 var TSP;
 (function (TSP) {
     TSP.Heuristics.push({
-        name: "Random",
+        name: "Willekeurig",
         solve: function (vertices) { return TSP.shuffle(vertices); }
     });
 })(TSP || (TSP = {}));
@@ -486,8 +491,8 @@ var TSP;
     TSP.OptHeuristics.push({
         name: "2-Opt",
         solve: function (vertices) {
-            /// let's make the magic happen
-            return vertices;
+            /// let's make the magic happen ;)
+            return vertices.reverse();
         }
     });
 })(TSP || (TSP = {}));
@@ -505,10 +510,10 @@ var TSP;
     "use strict";
     var controller = new TSP.Controller({
         dimensions: TSP.Size.default,
-        summary: document.getElementById('InfoPanel'),
-        allResults: document.getElementById('AllResults'),
-        resultArea: document.getElementById('Viewport'),
-        exportOutputButton: document.getElementById('ExportResults'),
+        summary: document.getElementById("InfoPanel"),
+        allResults: document.getElementById("AllResults"),
+        resultArea: document.getElementById("Viewport"),
+        exportOutputButton: document.getElementById("ExportResults"),
         exportInputButton: document.getElementById("ControllerExport"),
         importButton: document.getElementById("ControllerImport"),
         importError: document.getElementById("InputError"),
@@ -518,9 +523,10 @@ var TSP;
         updateButton: document.getElementById("ControllerUpdate"),
         randomCount: document.getElementById("RandomCount"),
         generateButton: document.getElementById("RandomGenerate"),
-        algorithmPicker: document.getElementById('Picker'),
-        calculateButton: document.getElementById('Calculate'),
-        testCount: document.getElementById('TestCount'),
+        algorithmPicker: document.getElementById("Picker"),
+        optAlgorithmPicker: document.getElementById("OptPicker"),
+        calculateButton: document.getElementById("Calculate"),
+        testCount: document.getElementById("TestCount"),
     });
 })(TSP || (TSP = {}));
 //# sourceMappingURL=packed.js.map

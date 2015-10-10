@@ -5,14 +5,14 @@
     </head>
     <body>
         <div class="center">
-            <div class="horizontal">
+            <div class="horizontal spacing">
                 <canvas id="ControllerPreview">Looks like your browser doesn't support the html5 canvas; quite a shame, really</canvas>
                 <div class="vertical">
-                    <div class="horizontal">
+                    <div class="horizontal spacing">
                         <input type="file" id="ControllerFiles">
                         <button id="ControllerImport">Importeer</button>
                     </div>
-                    <div class="horizontal">
+                    <div class="horizontal spacing">
                         <div class="vertical">
                             Aantal:
                             <input type="number" id="RandomCount" min="1" max="100" value="10">
@@ -25,18 +25,25 @@
                         </textarea>
                         <div id="InputError"></div>
                     </div>
-                    <div class="horizontal">
+                    <div class="horizontal spacing">
                         <button id="ControllerUpdate">Toon</button>
                         <button id="ControllerExport">Exporteer</button>
                     </div>
                 </div>
             </div>
             
-            <div class="horizontal">
-                <div class="vertical">
-                    Algoritme:
-                    <select id="Picker"></select>
+            <div class="horizontal spacing">
+                <div class="vertical spacing">
+                    <div class="horizontal">
+                        Algoritme: 
+                        <select id="Picker"></select>
+                    </div>
+                    <div class="horizontal">
+                        Optimalisatie:
+                        <select id="OptPicker"></select>
+                    </div>
                 </div>
+                
                 <div class="vertical">
                     Aantal tests:
                     <input id="TestCount" type="number" min="1" max="100" value="5">
@@ -46,7 +53,7 @@
                 </div>
                 
             </div>
-            <div class="horizontal">
+            <div class="horizontal spacing">
                 <div class="vertical">
                     <canvas id="Viewport">Looks like your browser doesn't support the html5 canvas; quite a shame, really</canvas>
                 </div>

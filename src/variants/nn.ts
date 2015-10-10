@@ -2,7 +2,7 @@
 
 module TSP {
     Heuristics.push({
-        name: "Nearest Neighbour",
+        name: "Naaste Buur",
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, pool: Vector[]): Vector {
                 let lengths  = pool.map(match => vertex.to(match).lengthSquared)

@@ -8,12 +8,12 @@ module TSP {
         solve(vertices: Vector[]): Vector[] {
             
             
-            /// let's make the magic happen
+            /// let's make the magic happen ;)
             
             
             
             
-            return vertices
+            return vertices.reverse()
         }
     })
     

@@ -2,7 +2,7 @@
 
 module TSP {
     Heuristics.push({
-        name: "Radius",
+        name: "Straal",
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, pool: Vector[]): Vector {
                 let start = 1

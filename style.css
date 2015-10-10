@@ -10,7 +10,7 @@ body {
     justify-content: space-between;
 }
 
-.horizontal > * {
+.spacing > * {
     margin: 5px;
 }
 

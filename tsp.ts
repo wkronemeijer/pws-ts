@@ -17,10 +17,10 @@ module TSP {
     
     let controller = new Controller({
         dimensions: Size.default,
-        summary:            <HTMLDivElement>     document.getElementById('InfoPanel'), 
-        allResults:         <HTMLDivElement>     document.getElementById('AllResults'),
-        resultArea:         <HTMLCanvasElement>  document.getElementById('Viewport'),
-        exportOutputButton: <HTMLAnchorElement>  document.getElementById('ExportResults'),
+        summary:            <HTMLDivElement>     document.getElementById("InfoPanel"), 
+        allResults:         <HTMLDivElement>     document.getElementById("AllResults"),
+        resultArea:         <HTMLCanvasElement>  document.getElementById("Viewport"),
+        exportOutputButton: <HTMLAnchorElement>  document.getElementById("ExportResults"),
         exportInputButton:  <HTMLButtonElement>  document.getElementById("ControllerExport"),
         importButton:       <HTMLButtonElement>  document.getElementById("ControllerImport"),
         importError:        <HTMLDivElement>     document.getElementById("InputError"),
@@ -30,8 +30,9 @@ module TSP {
         updateButton:       <HTMLButtonElement>  document.getElementById("ControllerUpdate"),
         randomCount:        <HTMLInputElement>   document.getElementById("RandomCount"),
         generateButton:     <HTMLButtonElement>  document.getElementById("RandomGenerate"),
-        algorithmPicker:    <HTMLSelectElement>  document.getElementById('Picker'),
-        calculateButton:    <HTMLButtonElement>  document.getElementById('Calculate'),
-        testCount:          <HTMLInputElement>   document.getElementById('TestCount'),
+        algorithmPicker:    <HTMLSelectElement>  document.getElementById("Picker"),
+        optAlgorithmPicker: <HTMLSelectElement>  document.getElementById("OptPicker"),
+        calculateButton:    <HTMLButtonElement>  document.getElementById("Calculate"),
+        testCount:          <HTMLInputElement>   document.getElementById("TestCount"),
     })
 }

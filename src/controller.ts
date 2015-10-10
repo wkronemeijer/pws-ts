@@ -11,8 +11,9 @@ module TSP {
         summary:      HTMLDivElement
         allResults:   HTMLDivElement
         
-        algorithmPicker:       HTMLSelectElement
-        testCount:    HTMLInputElement
+        algorithmPicker:    HTMLSelectElement
+        optAlgorithmPicker: HTMLSelectElement
+        testCount:          HTMLInputElement
         
         fileInput:       HTMLInputElement
         importButton:    HTMLButtonElement
@@ -57,7 +58,7 @@ module TSP {
             this.resultContext  = this.outlets.resultArea.getContext('2d')
             
             this.resizeCanvases()
-            this.populateAlgorithmPicker()
+            this.populatePickers()
             this.registerListeners()
         }
         
@@ -72,11 +73,17 @@ module TSP {
             resultArea.height = previewArea.height = dimensions.height
         }
         
-        populateAlgorithmPicker() {
+        populatePickers() {
             TSP.Heuristics.forEach(algorithm => {
                 let option = document.createElement('option')
                 option.innerText = algorithm.name
                 this.outlets.algorithmPicker.appendChild(option)
+            })
+            
+            TSP.OptHeuristics.forEach(optAlgorithm => {
+                let option = document.createElement('option')
+                option.innerText = optAlgorithm.name
+                this.outlets.optAlgorithmPicker.appendChild(option)
             })
         }
         

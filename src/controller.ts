@@ -5,7 +5,7 @@ module TSP {
     "use strict"
     
     
-    export interface ControllerConstructorArguments {
+    export interface ControllerOutlets {
         dimensions:   Size
         
         summary:      HTMLDivElement
@@ -14,18 +14,18 @@ module TSP {
         picker:       HTMLSelectElement
         testCount:    HTMLInputElement
         
-        fileInput:      HTMLInputElement
-        importButton:   HTMLButtonElement
-        fiddleArea:     HTMLTextAreaElement
-        importError:    HTMLDivElement
-        updateButton:   HTMLButtonElement
-        calculateButton:    HTMLButtonElement
+        fileInput:       HTMLInputElement
+        importButton:    HTMLButtonElement
+        fiddleArea:      HTMLTextAreaElement
+        importError:     HTMLDivElement
+        updateButton:    HTMLButtonElement
+        calculateButton: HTMLButtonElement
         
-        exportInputButton:   HTMLButtonElement
+        exportInputButton:  HTMLButtonElement
         exportOutputButton: HTMLAnchorElement
         
-        previewArea:    HTMLCanvasElement
-        resultArea:       HTMLCanvasElement
+        previewArea: HTMLCanvasElement
+        resultArea:  HTMLCanvasElement
         
         randomCount:    HTMLInputElement
         generateButton: HTMLButtonElement
@@ -40,7 +40,7 @@ module TSP {
         // "private" members //
         ///////////////////////
         
-        outlets: ControllerConstructorArguments
+        outlets: ControllerOutlets
         
         vertices:   Vector[]
         iconicPath: Path
@@ -48,7 +48,7 @@ module TSP {
         previewContext: CanvasRenderingContext2D
         resultContext:  CanvasRenderingContext2D
         
-        constructor(parameters: ControllerConstructorArguments) {
+        constructor(parameters: ControllerOutlets) {
             this.outlets    = parameters
             this.vertices   = null
             this.iconicPath = null

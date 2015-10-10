@@ -6,7 +6,9 @@ interface HTMLAnchorElement {
 
 module TSP {
     export class Vector {
-        constructor(public x: number, public y: number) {}
+        constructor(public x: number, public y: number) {
+            Object.freeze(this)
+        }
         
         static relative(base: Vector, target: Vector): Vector {
             let dx = target.x - base.x

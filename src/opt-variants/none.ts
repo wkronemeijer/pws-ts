@@ -3,8 +3,9 @@
 module TSP {
     "use strict"
     
-    OptHeuristics.push({
-        name: "-Geen-",
+    
+    Optimizers.push({
+        name: identityOptimizerName,
         solve: vertices => vertices
     })
 }

@@ -3,7 +3,8 @@
 module TSP {
     "use strict"
     
-    OptHeuristics.push({
+    
+    Optimizers.push({
         name: "2-Opt",
         solve(vertices: Vector[]): Vector[] {
             
@@ -13,7 +14,7 @@ module TSP {
             
             
             
-            return vertices.reverse()
+            return vertices.slice().reverse()
         }
     })
     

@@ -31,7 +31,7 @@ module TSP {
         randomCount:        <HTMLInputElement>   document.getElementById("RandomCount"),
         generateButton:     <HTMLButtonElement>  document.getElementById("RandomGenerate"),
         algorithmPicker:    <HTMLSelectElement>  document.getElementById("Picker"),
-        optAlgorithmPicker: <HTMLSelectElement>  document.getElementById("OptPicker"),
+        optimizationPicker: <HTMLSelectElement>  document.getElementById("OptPicker"),
         calculateButton:    <HTMLButtonElement>  document.getElementById("Calculate"),
         testCount:          <HTMLInputElement>   document.getElementById("TestCount"),
     })

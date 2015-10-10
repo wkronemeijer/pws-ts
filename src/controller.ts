@@ -12,7 +12,7 @@ module TSP {
         allResults:   HTMLDivElement
         
         algorithmPicker:    HTMLSelectElement
-        optAlgorithmPicker: HTMLSelectElement
+        optimizationPicker: HTMLSelectElement
         testCount:          HTMLInputElement
         
         fileInput:       HTMLInputElement
@@ -43,16 +43,18 @@ module TSP {
         
         outlets: ControllerOutlets
         
-        vertices:   Vector[]
-        iconicPath: Path
+        vertices:      Vector[]
+        iconicPath:    Path
+        optimizedPath: Path
         
         previewContext: CanvasRenderingContext2D
         resultContext:  CanvasRenderingContext2D
         
         constructor(parameters: ControllerOutlets) {
-            this.outlets    = parameters
-            this.vertices   = null
-            this.iconicPath = null
+            this.outlets       = parameters
+            this.vertices      = null
+            this.iconicPath    = null
+            this.optimizedPath = null
             
             this.previewContext = this.outlets.previewArea.getContext('2d')
             this.resultContext  = this.outlets.resultArea.getContext('2d')
@@ -80,10 +82,10 @@ module TSP {
                 this.outlets.algorithmPicker.appendChild(option)
             })
             
-            TSP.OptHeuristics.forEach(optAlgorithm => {
+            TSP.Optimizers.forEach(optAlgorithm => {
                 let option = document.createElement('option')
                 option.innerText = optAlgorithm.name
-                this.outlets.optAlgorithmPicker.appendChild(option)
+                this.outlets.optimizationPicker.appendChild(option)
             })
         }
         
@@ -148,8 +150,8 @@ module TSP {
         }
         
         exportOutputToFile() {
-            if (this.iconicPath !== null) {
-                downloadTextFile('output.txt', verticesToJSON(this.iconicPath.vertices))
+            if (this.iconicPath !== null && this.optimizedPath !== null) {
+                downloadTextFile('output.txt', verticesToJSON(this.optimizedPath.vertices))
             }
         }
         
@@ -183,30 +185,46 @@ module TSP {
             this.updatePreview()
             
             if (this.vertices !== null) {
-                let {algorithmPicker, testCount, summary, allResults} = this.outlets
+                let {algorithmPicker, optimizationPicker, testCount, summary, allResults} = this.outlets
                 
-                let algorithm   = Heuristics.filter(algo => algo.name === algorithmPicker.value)[0]
-                let count       = parseIntSafe(testCount.value, 1)
-                let results     = <TestResult[]>[] 
+                let algorithm = Heuristics.filter(algo => algo.name === algorithmPicker.value)[0]
+                let optimizer = Optimizers.filter(opt  => opt.name  === optimizationPicker.value)[0]
+                let count     = parseIntSafe(testCount.value, 1)
                 
-                this.iconicPath = performTest(algorithm, this.vertices).path
-                rangeTo(count).forEach(i => results.push(performTest(algorithm, this.vertices)))
+                let vertices    = this.vertices
+                let results     = <TestResult[]>[]
+                let opt_results = <TestResult[]>[]
                 
-                display({
-                    path: this.iconicPath, 
-                    context: this.resultContext, 
-                    dimensions: this.outlets.dimensions,
+                this.iconicPath    = performTest(algorithm, vertices).path
+                this.optimizedPath = performTest(optimizer, this.iconicPath.vertices).path
+                
+                rangeTo(count).forEach(i => {
+                    let result     = performTest(algorithm, vertices)
+                    let opt_result = performTest(optimizer, result.path.vertices)
+                    
+                    results.push(result)
+                    opt_results.push(opt_result)
                 })
                 
-                let timings = results.map(result => result.time)
+                let timings     = results.map(result => result.time)
+                let opt_timings = opt_results.map(result => result.time)
+                
+                let $ = Math.round
                 
                 summary.innerText  = 
-                    `Lengte: ${         Math.round(this.iconicPath.length)}\n`   +
-                    `Mediaan tijd: ${   Math.round(median(timings))   }ms\n` +
-                    `Gemiddelde tijd: ${Math.round(average(timings))  }ms\n`
+                    `Lengte: ${       $(this.iconicPath.length)   }\n`   +
+                    `Geopt. lengte: ${$(this.optimizedPath.length)}`
                 
-                allResults.innerText = `Tijden: ${results.map(result => Math.round(result.time)).join(', ')}\n` +
-                    `Puntenset: ${this.iconicPath.vertices.join(', ')}`
+                allResults.innerText = 
+                    `Algoritme uitvoertijden: (Q₂: ${    $(median(timings))    }) ${clip(timings.join(", ")    , maxLineLength / 3, "...")} \n` +
+                    `Optimalisatie uitvoertijden: (Q₂: ${$(median(opt_timings))}) ${clip(opt_timings.join(", "), maxLineLength / 3, "...")} \n\n` +
+                    `Puntenset: ${clip(this.optimizedPath.vertices.join(", "), maxLineLength, "...")}`
+                
+                display({
+                    path: this.optimizedPath, 
+                    context: this.resultContext, 
+                    dimensions: this.outlets.dimensions, 
+                })
             }
         }
     }

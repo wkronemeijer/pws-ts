@@ -119,7 +119,8 @@ var TSP;
     }
     TSP.performTest = performTest;
     TSP.Heuristics = [];
-    TSP.OptHeuristics = [];
+    TSP.Optimizers = [];
+    TSP.identityOptimizerName = "-Geen-";
     function verticesFromJSON(json) {
         return JSON.parse(json)
             .map(function (_a) {
@@ -230,6 +231,16 @@ var TSP;
         return isNaN(x) ? default_ : x;
     }
     TSP.parseIntSafe = parseIntSafe;
+    function clip(text, length, trail) {
+        if (text.length < length) {
+            return text;
+        }
+        else {
+            return text.slice(0, length) + trail;
+        }
+    }
+    TSP.clip = clip;
+    TSP.maxLineLength = 160;
 })(TSP || (TSP = {}));
 /// <reference path="../tsp.ts"/>
 var TSP;
@@ -272,6 +283,7 @@ var TSP;
             this.outlets = parameters;
             this.vertices = null;
             this.iconicPath = null;
+            this.optimizedPath = null;
             this.previewContext = this.outlets.previewArea.getContext('2d');
             this.resultContext = this.outlets.resultArea.getContext('2d');
             this.resizeCanvases();
@@ -290,10 +302,10 @@ var TSP;
                 option.innerText = algorithm.name;
                 _this.outlets.algorithmPicker.appendChild(option);
             });
-            TSP.OptHeuristics.forEach(function (optAlgorithm) {
+            TSP.Optimizers.forEach(function (optAlgorithm) {
                 var option = document.createElement('option');
                 option.innerText = optAlgorithm.name;
-                _this.outlets.optAlgorithmPicker.appendChild(option);
+                _this.outlets.optimizationPicker.appendChild(option);
             });
         };
         Controller.prototype.registerListeners = function () {
@@ -340,8 +352,8 @@ var TSP;
             }
         };
         Controller.prototype.exportOutputToFile = function () {
-            if (this.iconicPath !== null) {
-                TSP.downloadTextFile('output.txt', TSP.verticesToJSON(this.iconicPath.vertices));
+            if (this.iconicPath !== null && this.optimizedPath !== null) {
+                TSP.downloadTextFile('output.txt', TSP.verticesToJSON(this.optimizedPath.vertices));
             }
         };
         Controller.prototype.updatePreview = function () {
@@ -369,27 +381,38 @@ var TSP;
             }
         };
         Controller.prototype.calculateResults = function () {
-            var _this = this;
             this.updatePreview();
             if (this.vertices !== null) {
-                var _a = this.outlets, algorithmPicker = _a.algorithmPicker, testCount = _a.testCount, summary = _a.summary, allResults = _a.allResults;
+                var _a = this.outlets, algorithmPicker = _a.algorithmPicker, optimizationPicker = _a.optimizationPicker, testCount = _a.testCount, summary = _a.summary, allResults = _a.allResults;
                 var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === algorithmPicker.value; })[0];
+                var optimizer = TSP.Optimizers.filter(function (opt) { return opt.name === optimizationPicker.value; })[0];
                 var count = TSP.parseIntSafe(testCount.value, 1);
+                var vertices = this.vertices;
                 var results = [];
-                this.iconicPath = TSP.performTest(algorithm, this.vertices).path;
-                TSP.rangeTo(count).forEach(function (i) { return results.push(TSP.performTest(algorithm, _this.vertices)); });
+                var opt_results = [];
+                this.iconicPath = TSP.performTest(algorithm, vertices).path;
+                this.optimizedPath = TSP.performTest(optimizer, this.iconicPath.vertices).path;
+                TSP.rangeTo(count).forEach(function (i) {
+                    var result = TSP.performTest(algorithm, vertices);
+                    var opt_result = TSP.performTest(optimizer, result.path.vertices);
+                    results.push(result);
+                    opt_results.push(opt_result);
+                });
+                var timings = results.map(function (result) { return result.time; });
+                var opt_timings = opt_results.map(function (result) { return result.time; });
+                var $ = Math.round;
+                summary.innerText =
+                    ("Lengte: " + $(this.iconicPath.length) + "\n") +
+                        ("Geopt. lengte: " + $(this.optimizedPath.length));
+                allResults.innerText =
+                    ("Algoritme uitvoertijden: (Q\u2082: " + $(TSP.median(timings)) + ") " + TSP.clip(timings.join(", "), TSP.maxLineLength / 3, "...") + " \n") +
+                        ("Optimalisatie uitvoertijden: (Q\u2082: " + $(TSP.median(opt_timings)) + ") " + TSP.clip(opt_timings.join(", "), TSP.maxLineLength / 3, "...") + " \n\n") +
+                        ("Puntenset: " + TSP.clip(this.optimizedPath.vertices.join(", "), TSP.maxLineLength, "..."));
                 TSP.display({
-                    path: this.iconicPath,
+                    path: this.optimizedPath,
                     context: this.resultContext,
                     dimensions: this.outlets.dimensions,
                 });
-                var timings = results.map(function (result) { return result.time; });
-                summary.innerText =
-                    ("Lengte: " + Math.round(this.iconicPath.length) + "\n") +
-                        ("Mediaan tijd: " + Math.round(TSP.median(timings)) + "ms\n") +
-                        ("Gemiddelde tijd: " + Math.round(TSP.average(timings)) + "ms\n");
-                allResults.innerText = ("Tijden: " + results.map(function (result) { return Math.round(result.time); }).join(', ') + "\n") +
-                    ("Puntenset: " + this.iconicPath.vertices.join(', '));
             }
         };
         return Controller;
@@ -479,8 +502,8 @@ var TSP;
 var TSP;
 (function (TSP) {
     "use strict";
-    TSP.OptHeuristics.push({
-        name: "-Geen-",
+    TSP.Optimizers.push({
+        name: TSP.identityOptimizerName,
         solve: function (vertices) { return vertices; }
     });
 })(TSP || (TSP = {}));
@@ -488,11 +511,11 @@ var TSP;
 var TSP;
 (function (TSP) {
     "use strict";
-    TSP.OptHeuristics.push({
+    TSP.Optimizers.push({
         name: "2-Opt",
         solve: function (vertices) {
             /// let's make the magic happen ;)
-            return vertices.reverse();
+            return vertices.slice().reverse();
         }
     });
 })(TSP || (TSP = {}));
@@ -524,7 +547,7 @@ var TSP;
         randomCount: document.getElementById("RandomCount"),
         generateButton: document.getElementById("RandomGenerate"),
         algorithmPicker: document.getElementById("Picker"),
-        optAlgorithmPicker: document.getElementById("OptPicker"),
+        optimizationPicker: document.getElementById("OptPicker"),
         calculateButton: document.getElementById("Calculate"),
         testCount: document.getElementById("TestCount"),
     });

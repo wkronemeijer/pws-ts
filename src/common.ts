@@ -131,8 +131,10 @@ module TSP {
         }
     }
     
-    export let Heuristics:    TSPAlgorithm[] = []
-    export let OptHeuristics: TSPAlgorithm[] = []
+    export let Heuristics: TSPAlgorithm[] = []
+    export let Optimizers: TSPAlgorithm[] = []
+    
+    export let identityOptimizerName = "-Geen-"
     
     
     export function verticesFromJSON(json: string): Vector[] {
@@ -140,6 +142,7 @@ module TSP {
             .map(([x, y]) => (x !== undefined && y !== undefined) ? new Vector(x, y) : null)
             .filter(perhaps => perhaps !== null)
     }
+    
     
     export function verticesToJSON(vertices: Vector[]): string {
         return JSON.stringify(vertices.map(vertex => [vertex.x, vertex.y]))
@@ -174,6 +177,7 @@ module TSP {
         }
     }
     
+    
     export function deleteFrom<T>(array: T[], item: T): boolean {
         let index = array.indexOf(item)
         if (index !== -1) {
@@ -196,6 +200,7 @@ module TSP {
             return NaN
         }
     }
+    
     
     export function median(samples: number[]): number {
         let array  = samples.slice().sort()
@@ -234,6 +239,7 @@ module TSP {
         return builder
     }
     
+    
     export function randomVertices(count: number): Vector[] {
         let {width: x_range, height: y_range} = Size.default
         
@@ -247,8 +253,22 @@ module TSP {
         return Object.freeze(accumulator)
     }
     
+    
     export function parseIntSafe(s: string, default_ = 0) {
         let x = parseInt(s)
         return isNaN(x) ? default_ : x
     }
+    
+    
+    export function clip(text: string, length: number, trail: string) {
+        if (text.length < length) {
+            return text
+        } else {
+            return text.slice(0, length) + trail
+        }
+    }
+    
+    
+    export const maxLineLength = 160 //characters
+    
 }

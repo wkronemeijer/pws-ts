@@ -4,13 +4,7 @@ var TSP;
         function Vector(x, y) {
             this.x = x;
             this.y = y;
-            Object.freeze(this);
         }
-        Vector.relative = function (base, target) {
-            var dx = target.x - base.x;
-            var dy = target.y - base.y;
-            return new Vector(dx, dy);
-        };
         Object.defineProperty(Vector.prototype, "lengthSquared", {
             get: function () {
                 var _a = this, x = _a.x, y = _a.y;
@@ -34,11 +28,12 @@ var TSP;
             configurable: true
         });
         Vector.prototype.toString = function () {
-            var _a = this, x = _a.x, y = _a.y;
-            return "(" + x + ", " + y + ")";
+            return "(" + this.x + ", " + this.y + ")";
         };
         Vector.prototype.to = function (target) {
-            return Vector.relative(this, target);
+            var dx = target.x - this.x;
+            var dy = target.y - this.y;
+            return new Vector(dx, dy);
         };
         Vector.prototype.dot = function (operand) {
             return this.x * operand.x + this.y * operand.y;
@@ -75,8 +70,7 @@ var TSP;
             this.height = height;
         }
         Size.prototype.toString = function () {
-            var _a = this, width = _a.width, height = _a.height;
-            return "(" + width + ", " + height + ")";
+            return "(" + this.width + ", " + this.height + ")";
         };
         Size.default = Object.freeze(new Size(1000, 1000));
         return Size;
@@ -87,6 +81,7 @@ var TSP;
             if (closed === void 0) { closed = true; }
             this.vertices = vertices;
             this.closed = closed;
+            Object.freeze(this.vertices);
         }
         Object.defineProperty(Path.prototype, "length", {
             get: function () {
@@ -124,6 +119,7 @@ var TSP;
     }
     TSP.performTest = performTest;
     TSP.Heuristics = [];
+    TSP.OptHeuristics = [];
     function verticesFromJSON(json) {
         return JSON.parse(json)
             .map(function (_a) {
@@ -279,7 +275,7 @@ var TSP;
             this.previewContext = this.outlets.previewArea.getContext('2d');
             this.resultContext = this.outlets.resultArea.getContext('2d');
             this.resizeCanvases();
-            this.populatePicker();
+            this.populateAlgorithmPicker();
             this.registerListeners();
         }
         Controller.prototype.resizeCanvases = function () {
@@ -287,12 +283,12 @@ var TSP;
             resultArea.width = previewArea.width = dimensions.width;
             resultArea.height = previewArea.height = dimensions.height;
         };
-        Controller.prototype.populatePicker = function () {
+        Controller.prototype.populateAlgorithmPicker = function () {
             var _this = this;
             TSP.Heuristics.forEach(function (algorithm) {
                 var option = document.createElement('option');
                 option.innerText = algorithm.name;
-                _this.outlets.picker.appendChild(option);
+                _this.outlets.algorithmPicker.appendChild(option);
             });
         };
         Controller.prototype.registerListeners = function () {
@@ -371,8 +367,8 @@ var TSP;
             var _this = this;
             this.updatePreview();
             if (this.vertices !== null) {
-                var _a = this.outlets, picker = _a.picker, testCount = _a.testCount, summary = _a.summary, allResults = _a.allResults;
-                var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === picker.value; })[0];
+                var _a = this.outlets, algorithmPicker = _a.algorithmPicker, testCount = _a.testCount, summary = _a.summary, allResults = _a.allResults;
+                var algorithm = TSP.Heuristics.filter(function (algo) { return algo.name === algorithmPicker.value; })[0];
                 var count = TSP.parseIntSafe(testCount.value, 1);
                 var results = [];
                 this.iconicPath = TSP.performTest(algorithm, this.vertices).path;
@@ -407,41 +403,6 @@ var TSP;
                 var index = lengths.indexOf(shortest);
                 return pool[index];
             }
-            if (vertices.length < 4) {
-                return vertices;
-            }
-            var result = [];
-            var current = vertices[0];
-            var remaining = vertices.slice(1);
-            result.push(current);
-            while (remaining.length !== 0) {
-                var nearest = findNearest(current, remaining);
-                if (nearest === null) {
-                    break;
-                }
-                current = nearest;
-                TSP.deleteFrom(remaining, nearest);
-                result.push(current);
-            }
-            return result;
-        }
-    });
-})(TSP || (TSP = {}));
-/// <reference path="./../common.ts"/>
-var TSP;
-(function (TSP) {
-    TSP.Heuristics.push({
-        name: "Nearest Neighbour, Alt",
-        solve: function (vertices) {
-            function findNearest(vertex, pool) {
-                var lengths = pool.map(function (match) { return vertex.to(match).lengthSquared; });
-                var shortest = Math.min.apply(null, lengths);
-                var index = lengths.indexOf(shortest);
-                return pool[index];
-            }
-            if (vertices.length < 4) {
-                return vertices;
-            }
             var ordered = [vertices[0]];
             var unordered = vertices.slice(1);
             while (unordered.length !== 0) {
@@ -454,6 +415,7 @@ var TSP;
         }
     });
 })(TSP || (TSP = {}));
+/// <reference path="./../common.ts"/>
 /// <reference path="./../common.ts"/>
 var TSP;
 (function (TSP) {
@@ -483,9 +445,6 @@ var TSP;
                 var index = lengths.indexOf(shortest);
                 return matches[index];
             }
-            if (vertices.length < 4) {
-                return vertices;
-            }
             var result = [];
             var current = vertices[0];
             var remaining = vertices.slice(1);
@@ -511,6 +470,27 @@ var TSP;
         solve: function (vertices) { return TSP.shuffle(vertices); }
     });
 })(TSP || (TSP = {}));
+/// <reference path="./../common.ts"/>
+var TSP;
+(function (TSP) {
+    "use strict";
+    TSP.OptHeuristics.push({
+        name: "-Geen-",
+        solve: function (vertices) { return vertices; }
+    });
+})(TSP || (TSP = {}));
+/// <reference path="./../common.ts"/>
+var TSP;
+(function (TSP) {
+    "use strict";
+    TSP.OptHeuristics.push({
+        name: "2-Opt",
+        solve: function (vertices) {
+            /// let's make the magic happen
+            return vertices;
+        }
+    });
+})(TSP || (TSP = {}));
 /// <reference path="./src/common.ts"/>
 /// <reference path="./src/output.ts"/>
 /// <reference path="./src/controller.ts"/>
@@ -518,6 +498,8 @@ var TSP;
 /// <reference path="./src/variants/nn_alt.ts"/>
 /// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/variants/random.ts"/>
+/// <reference path="./src/opt-variants/none.ts"/>
+/// <reference path="./src/opt-variants/2-opt.ts"/>
 var TSP;
 (function (TSP) {
     "use strict";
@@ -536,7 +518,7 @@ var TSP;
         updateButton: document.getElementById("ControllerUpdate"),
         randomCount: document.getElementById("RandomCount"),
         generateButton: document.getElementById("RandomGenerate"),
-        picker: document.getElementById('Picker'),
+        algorithmPicker: document.getElementById('Picker'),
         calculateButton: document.getElementById('Calculate'),
         testCount: document.getElementById('TestCount'),
     });

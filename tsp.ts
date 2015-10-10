@@ -7,6 +7,10 @@
 /// <reference path="./src/variants/radius.ts"/>
 /// <reference path="./src/variants/random.ts"/>
 
+/// <reference path="./src/opt-variants/none.ts"/>
+/// <reference path="./src/opt-variants/2-opt.ts"/>
+
+
 module TSP {
     "use strict"
     
@@ -26,7 +30,7 @@ module TSP {
         updateButton:       <HTMLButtonElement>  document.getElementById("ControllerUpdate"),
         randomCount:        <HTMLInputElement>   document.getElementById("RandomCount"),
         generateButton:     <HTMLButtonElement>  document.getElementById("RandomGenerate"),
-        picker:             <HTMLSelectElement>  document.getElementById('Picker'),
+        algorithmPicker:    <HTMLSelectElement>  document.getElementById('Picker'),
         calculateButton:    <HTMLButtonElement>  document.getElementById('Calculate'),
         testCount:          <HTMLInputElement>   document.getElementById('TestCount'),
     })

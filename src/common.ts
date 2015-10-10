@@ -6,10 +6,7 @@ interface HTMLAnchorElement {
 
 module TSP {
     export class Vector {
-        constructor(public x: number, public y: number) {
-            Object.freeze(this)
-        }
-        
+        constructor(public x: number, public y: number) {}
         
         get lengthSquared(): number {
             let {x, y} = this
@@ -75,16 +72,15 @@ module TSP {
         static default = Object.freeze(new Size(1000, 1000))
         
         toString(): string {
-            let {width, height} = this
-            return `(${width}, ${height})`
+            return `(${this.width}, ${this.height})`
         }
     }
     
     
-    
-    
     export class Path {
-        constructor(public vertices: Vector[], public closed = true) {}
+        constructor(public vertices: Vector[], public closed = true) {
+            Object.freeze(this.vertices)
+        }
         
         /** */
         get length(): number {
@@ -135,7 +131,8 @@ module TSP {
         }
     }
     
-    export let Heuristics: TSPAlgorithm[] = []
+    export let Heuristics:    TSPAlgorithm[] = []
+    export let OptHeuristics: TSPAlgorithm[] = []
     
     
     export function verticesFromJSON(json: string): Vector[] {
@@ -201,9 +198,9 @@ module TSP {
     }
     
     export function median(samples: number[]): number {
-        let array = samples.slice().sort()
+        let array  = samples.slice().sort()
+        let length = array.length
         
-        let {length} = array
         if (length % 2 === 1) {
             return array[(length - 1) / 2]
         } else {
@@ -227,14 +224,14 @@ module TSP {
     
     
     export function shuffle<T>(array: T[]): T[] {
-        let builder  = array.slice() 
-        let {length} = builder
+        let builder = array.slice() 
+        let length  = builder.length
         
         for (let i = length - 1; i > 0; i--) {
             let j = Math.floor(Math.random() * (i + 1));
             [builder[i], builder[j]] = [builder[j], builder[i]]
         }
-        return builder;
+        return builder
     }
     
     export function randomVertices(count: number): Vector[] {
@@ -250,7 +247,7 @@ module TSP {
         return Object.freeze(accumulator)
     }
     
-    export function parseIntSafe(s: string, default_: number = 0) {
+    export function parseIntSafe(s: string, default_ = 0) {
         let x = parseInt(s)
         return isNaN(x) ? default_ : x
     }

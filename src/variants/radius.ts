@@ -9,10 +9,10 @@ module TSP {
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, pool: Vector[]): Vector {
                 let start = 1
-                let stop = 2 * 1000
-                let step = stop / 10
+                let stop  = 2 * 1000
+                let step  = stop / 10
                 
-                var radius  = start
+                let radius  = start
                 let matches = <Vector[]>[]
                 
                 while (matches.length === 0) {

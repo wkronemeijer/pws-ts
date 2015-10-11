@@ -40,7 +40,6 @@ var TSP;
         Vector.prototype.signedAngleWith = function (point) {
             return this.angleWith(point) * Math.sign(point.y * this.x - point.x * this.y);
         };
-        Vector.origin = new Vector(0, 0);
         return Vector;
     })();
     TSP.Vector = Vector;
@@ -289,6 +288,7 @@ var TSP;
 /// <reference path="../tsp.ts"/>
 var TSP;
 (function (TSP) {
+    "use strict";
     var τ = 2 * Math.PI;
     function display(parameters) {
         var path = parameters.path, ctx = parameters.context, _a = parameters.dimensions, width = _a.width, height = _a.height, _b = parameters.edgeWidth, edgeWidth = _b === void 0 ? 2 : _b, _c = parameters.vertexSize, vertexSize = _c === void 0 ? 5 : _c;
@@ -445,14 +445,14 @@ var TSP;
                 });
                 var timings = results.map(function (result) { return result.time; });
                 var opt_timings = opt_results.map(function (result) { return result.time; });
-                var $ = Math.round;
+                var $_ = Math.round;
                 summary.innerText =
-                    ("Lengte: " + $(this.iconicPath.length) + "\n") +
-                        ("Geopt. lengte: " + $(this.optimizedPath.length) + "\n") +
-                        ("Winst: " + $((1 - this.optimizedPath.length / this.iconicPath.length) * 100) + "%");
+                    ("Lengte: " + $_(this.iconicPath.length) + "\n") +
+                        ("Geopt. lengte: " + $_(this.optimizedPath.length) + "\n") +
+                        ("Winst: " + $_((1 - this.optimizedPath.length / this.iconicPath.length) * 100) + "%");
                 allResults.innerText =
-                    ("Algoritme uitvoertijden: (Q\u2082: " + $(TSP.median(timings)) + ")\n" + TSP.clip(timings.join(", "), TSP.maxLineLength / 3, "...") + " \n") +
-                        ("Optimalisatie uitvoertijden: (Q\u2082: " + $(TSP.median(opt_timings)) + ")\n" + TSP.clip(opt_timings.join(", "), TSP.maxLineLength / 3, "...") + " \n\n") +
+                    ("Algoritme uitvoertijden: (Q\u2082: " + $_(TSP.median(timings)) + ")\n" + TSP.clip(timings.join(", "), TSP.maxLineLength / 3, "...") + " \n") +
+                        ("Optimalisatie uitvoertijden: (Q\u2082: " + $_(TSP.median(opt_timings)) + ")\n" + TSP.clip(opt_timings.join(", "), TSP.maxLineLength / 3, "...") + " \n\n") +
                         ("Puntenset: " + TSP.clip(this.optimizedPath.vertices.join(", "), TSP.maxLineLength, "..."));
                 TSP.display({
                     path: this.optimizedPath,
@@ -632,34 +632,9 @@ var TSP;
 var TSP;
 (function (TSP) {
     "use strict";
-    function $(vertices) {
-        return new TSP.Path(vertices);
-    }
     TSP.Optimizers.push({
         name: "2-Opt",
         solve: function (vertices) {
-            /*let length     = vertices.length
-            let best_route = vertices.slice()
-            
-            again:
-            for (let i = 1; i < length - 3; i++ ) {
-                for (let j = i + 2; j < length - 1; j++) {
-                    let a = best_route[i]
-                    let b = best_route[i + 1]
-                    let c = best_route[j]
-                    let d = best_route[j + 1]
-                    
-                    let before = a.to(b).lengthSquared + c.to(d).lengthSquared
-                    let after  = a.to(c).lengthSquared + b.to(d).lengthSquared
-                    
-                    if (after < before) {
-                        best_route = swap(best_route, i+1, j)
-                        continue again
-                    }
-                }
-            }
-            
-            return best_route*/
             var length = vertices.length;
             var best_route = vertices.slice();
             var stale = true;
@@ -717,7 +692,4 @@ var TSP;
         testCount: document.getElementById("TestCount"),
     });
 })(TSP || (TSP = {}));
-function vector(x, y) {
-    return new TSP.Vector(x, y);
-}
 //# sourceMappingURL=packed.js.map

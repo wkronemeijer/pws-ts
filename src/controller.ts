@@ -132,14 +132,14 @@ module TSP {
         importContentFromFile() {
             let {fileInput, fiddleArea} = this.outlets
             
-            let file   = fileInput.files[0]
-            let reader = new FileReader()
-            
+            let file         = fileInput.files[0]
+            let reader       = new FileReader()
             fiddleArea.value = ""
             
             reader.addEventListener('loadend', event => {
                 fiddleArea.value = <string>reader.result
             }, false)
+            
             reader.readAsText(file)
         }
         
@@ -210,16 +210,16 @@ module TSP {
                 let timings     = results.map(result => result.time)
                 let opt_timings = opt_results.map(result => result.time)
                 
-                let $ = Math.round
+                let $_ = Math.round
                 
                 summary.innerText  = 
-                    `Lengte: ${       $(this.iconicPath.length)   }\n` +
-                    `Geopt. lengte: ${$(this.optimizedPath.length)}\n` +
-                    `Winst: ${$((1 - this.optimizedPath.length / this.iconicPath.length) * 100)}%`
+                    `Lengte: ${       $_(this.iconicPath.length)   }\n` +
+                    `Geopt. lengte: ${$_(this.optimizedPath.length)}\n` +
+                    `Winst: ${$_((1 - this.optimizedPath.length / this.iconicPath.length) * 100)}%`
                 
                 allResults.innerText = 
-                    `Algoritme uitvoertijden: (Q₂: ${    $(median(timings))    })\n${clip(timings.join(", ")    , maxLineLength / 3, "...")} \n` +
-                    `Optimalisatie uitvoertijden: (Q₂: ${$(median(opt_timings))})\n${clip(opt_timings.join(", "), maxLineLength / 3, "...")} \n\n` +
+                    `Algoritme uitvoertijden: (Q₂: ${    $_(median(timings))    })\n${clip(timings.join(", ")    , maxLineLength / 3, "...")} \n` +
+                    `Optimalisatie uitvoertijden: (Q₂: ${$_(median(opt_timings))})\n${clip(opt_timings.join(", "), maxLineLength / 3, "...")} \n\n` +
                     `Puntenset: ${clip(this.optimizedPath.vertices.join(", "), maxLineLength, "...")}`
                 
                 display({

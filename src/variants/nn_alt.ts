@@ -1,5 +1,5 @@
 /// <reference path="./../common.ts"/>
 
 module TSP {
-    //stub, removing files in github is hard ;)
+    //stub, removing files in github is hard (-_-')
 }

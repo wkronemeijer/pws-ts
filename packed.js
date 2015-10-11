@@ -55,8 +55,7 @@ var TSP;
             return relative_length < radius;
         };
         Circle.prototype.toString = function () {
-            var _a = this, center = _a.center, radius = _a.radius;
-            return "(" + center + ", " + radius + ")";
+            return "(" + this.center + ", " + this.radius + ")";
         };
         return Circle;
     })();
@@ -120,7 +119,6 @@ var TSP;
         var content = encodeURIComponent(text);
         return "data:text;charset=utf-8," + content;
     }
-    TSP.encodeAsDataURL = encodeAsDataURL;
     function downloadTextFile(name, content) {
         var a = document.createElement('a');
         a.href = encodeAsDataURL(content);

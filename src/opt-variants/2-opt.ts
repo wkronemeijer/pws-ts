@@ -3,37 +3,10 @@
 module TSP {
     "use strict"
     
-    function $(vertices: Vector[]): Path {
-        return new Path(vertices)
-    }
-    
     
     Optimizers.push({
         name: "2-Opt",
         solve(vertices: Vector[]): Vector[] {
-            /*let length     = vertices.length
-            let best_route = vertices.slice()
-            
-            again:
-            for (let i = 1; i < length - 3; i++ ) {
-                for (let j = i + 2; j < length - 1; j++) {
-                    let a = best_route[i]
-                    let b = best_route[i + 1]
-                    let c = best_route[j]
-                    let d = best_route[j + 1]
-                    
-                    let before = a.to(b).lengthSquared + c.to(d).lengthSquared
-                    let after  = a.to(c).lengthSquared + b.to(d).lengthSquared
-                    
-                    if (after < before) {
-                        best_route = swap(best_route, i+1, j)
-                        continue again
-                    }
-                }
-            }
-            
-            return best_route*/
-            
             let length     = vertices.length
             let best_route = vertices.slice()
             let stale = true
@@ -58,10 +31,7 @@ module TSP {
                 }
             } while (!stale)
             
-            
             return best_route
         }
     })
-    
-    
 }

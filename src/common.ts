@@ -3,14 +3,12 @@ interface HTMLAnchorElement {
 }
 
 
-
 module TSP {
     "use strict"
     
+    
     export class Vector {
         constructor(public x: number, public y: number) {}
-        
-        static origin = new Vector(0, 0);
         
         
         get copy() {
@@ -62,10 +60,8 @@ module TSP {
             return relative_length < radius
         }
         
-        
         toString(): string {
-            let {center, radius} = this
-            return `(${center}, ${radius})`
+            return `(${this.center}, ${this.radius})`
         }
     }
     
@@ -115,6 +111,7 @@ module TSP {
         }
     }
     
+    
     export let Heuristics: TSPAlgorithm[] = []
     export let Optimizers: TSPAlgorithm[] = []
     
@@ -133,7 +130,7 @@ module TSP {
     }
     
     
-    export function encodeAsDataURL(text: string) {
+    function encodeAsDataURL(text: string) {
         let content = encodeURIComponent(text)
         return `data:text;charset=utf-8,${content}`
     }
@@ -172,13 +169,12 @@ module TSP {
         }
     }
     
+    
     export function complement<T>(source: T[], toBeRemoved: T[]): T[] {
         let array = source.slice()
         toBeRemoved.forEach(target => deleteFrom(array, target))
         return array
     }
-    
-    
     
     
     export function average(array: number[]): number {
@@ -292,6 +288,7 @@ module TSP {
         return accumulator
     }
     
+    
     export function clamp(min: number, value: number, max: number): number {
         return Math.min(Math.max(min, value), max)
     }
@@ -305,10 +302,7 @@ module TSP {
         return array[index]
     }
     
-    /*
-    Input: [1,2,3,4]
-    Output: [[1,2], [2,3], [3,4] (loop ? , [4, 1])]
-    */
+    
     export function sequentialPairs<T>(array: T[], loop = true): T[][] {
         let length      = array.length
         let accumulator = <T[][]>[]
@@ -334,5 +328,4 @@ module TSP {
         let index = array.indexOf(after) + 1
         array.splice(index, 0, item)
     }
-    
 }

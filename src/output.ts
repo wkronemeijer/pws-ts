@@ -1,6 +1,9 @@
 /// <reference path="../tsp.ts"/>
 
 module TSP {
+    "use strict"
+    
+    
     export interface DisplayParameters {
         path: Path
         context: CanvasRenderingContext2D
@@ -11,6 +14,7 @@ module TSP {
     
     
     let τ = 2 * Math.PI
+    
     
     export function display(parameters: DisplayParameters) {
         let {

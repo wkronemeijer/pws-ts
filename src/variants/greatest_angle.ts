@@ -30,7 +30,6 @@ module TSP {
         while (true) {
             var cursor    = accumulator[accumulator.length - 1]
             let remaining = removeFrom(vertices, cursor)
-            
             let candidate = findLeftmostTurn(cursor, remaining)
             
             if (candidate === start) {

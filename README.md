@@ -1,6 +1,6 @@
 # pws-ts
-Travelling salesman problems with typescript
+Travelling salesman problem(s) with `typescript`
 
 ##About
 
-A number of heuristics for the travelling salesman problem, wrapped up in a single web page for [GitHub Pages](http://crumpyoldlord.github.io/pws-ts/).
+A number of heuristics and optimisation methods for the travelling salesman problem, wrapped up in a single page on [GitHub Pages](http://crumpyoldlord.github.io/pws-ts/).

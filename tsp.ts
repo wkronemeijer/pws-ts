@@ -38,4 +38,6 @@ module TSP {
         calculateButton:    <HTMLButtonElement>  document.getElementById("Calculate"),
         testCount:          <HTMLInputElement>   document.getElementById("TestCount"),
     })
+    
+    controller.updatePreview()
 }

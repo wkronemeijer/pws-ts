@@ -691,5 +691,6 @@ var TSP;
         calculateButton: document.getElementById("Calculate"),
         testCount: document.getElementById("TestCount"),
     });
+    controller.updatePreview();
 })(TSP || (TSP = {}));
 //# sourceMappingURL=packed.js.map

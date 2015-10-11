@@ -2,43 +2,41 @@
 
 module TSP {
     "use strict"
-    export function findLeftmostPoint(point: Vector, candidates: Vector[]): Vector {
-        let basis = randomElementFrom(candidates)
+    
+    
+    function findLeftmostTurn(point: Vector, candidates: Vector[]): Vector {
+        let chosen = randomElementFrom(candidates)
         
-        console.log(candidates.indexOf(basis))
-        
-        let angles = candidates.map(candidate => {
-            let basis_edge     = point.to(basis)
+        candidates.forEach(candidate => {
+            let chosen_edge    = point.to(chosen)
             let candidate_edge = point.to(candidate)
             
-            return basis_edge.signedAngleWith(candidate_edge)
+            if (chosen_edge.signedAngleWith(candidate_edge) > 0) {  // i.e. farther counter-clockwise
+                chosen = candidate
+            } 
         })
         
-        let leftmost_angle = Math.min(...(angles))
-        let leftmost_point = candidates[angles.indexOf(leftmost_angle)]
-        
-        return leftmost_point
+        return chosen
     }
     
-    export function convexHull(vertices: Vector[]): Vector[] {
-        {
-            let x_vertices = vertices.map(vertex => vertex.x)
-            let minimum_x  = Math.min(...x_vertices)
-            var start      = vertices[x_vertices.indexOf(minimum_x)]
-        }
+    
+    function convexHull(vertices: Vector[]): Vector[] {
+        let x_vertices = vertices.map(vertex => vertex.x)
+        let minimum_x  = Math.min(...x_vertices)
         
+        let start       = vertices[x_vertices.indexOf(minimum_x)]
         let accumulator = [start]
         
         while (true) {
             var cursor    = accumulator[accumulator.length - 1]
             let remaining = removeFrom(vertices, cursor)
             
-            let chosen_candidate = findLeftmostPoint(cursor, remaining)
+            let candidate = findLeftmostTurn(cursor, remaining)
             
-            if (chosen_candidate === start) {
+            if (candidate === start) {
                 break
             } else {
-                accumulator.push(chosen_candidate)
+                accumulator.push(candidate)
             }
         }
         

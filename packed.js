@@ -468,21 +468,18 @@ var TSP;
 var TSP;
 (function (TSP) {
     "use strict";
-    function findLeftmostPoint(point, candidates) {
-        var basis = TSP.randomElementFrom(candidates);
-        console.log(candidates.indexOf(basis));
-        var angles = candidates.map(function (candidate) {
-            var basis_edge = point.to(basis);
+    function findLeftmostTurn(point, candidates) {
+        var chosen = TSP.randomElementFrom(candidates);
+        candidates.forEach(function (candidate) {
+            var chosen_edge = point.to(chosen);
             var candidate_edge = point.to(candidate);
-            return basis_edge.signedAngleWith(candidate_edge);
+            if (chosen_edge.signedAngleWith(candidate_edge) > 0) {
+                chosen = candidate;
+            }
         });
-        var leftmost_angle = Math.min.apply(Math, (angles));
-        var leftmost_point = candidates[angles.indexOf(leftmost_angle)];
-        return leftmost_point;
+        return chosen;
     }
-    TSP.findLeftmostPoint = findLeftmostPoint;
     function convexHull(vertices) {
-        // jarvis march for now, nice and simple
         var x_vertices = vertices.map(function (vertex) { return vertex.x; });
         var minimum_x = Math.min.apply(Math, x_vertices);
         var start = vertices[x_vertices.indexOf(minimum_x)];
@@ -490,21 +487,16 @@ var TSP;
         while (true) {
             var cursor = accumulator[accumulator.length - 1];
             var remaining = TSP.removeFrom(vertices, cursor);
-            var chosen_candidate = findLeftmostPoint(cursor, remaining);
-            if (chosen_candidate === undefined) {
-                var foo = remaining.join(", ");
-                debugger;
-            }
-            console.log(cursor, remaining.join(", "), chosen_candidate);
-            console.log("\n");
-            if (chosen_candidate === start) {
+            var candidate = findLeftmostTurn(cursor, remaining);
+            if (candidate === start) {
                 break;
             }
-            accumulator.push(chosen_candidate);
+            else {
+                accumulator.push(candidate);
+            }
         }
         return accumulator;
     }
-    TSP.convexHull = convexHull;
     TSP.Heuristics.push({
         name: "Grootste Hoek",
         solve: function (vertices) {

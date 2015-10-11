@@ -43,30 +43,43 @@ module TSP {
         return accumulator
     }
     
+    /**Returns insertion point: [item_before, item] */
+    function findGreatestAngle(hull: Vector[], candidates: Vector[]): Vector[] {
+        let chosen         = [hull[0], randomElementFrom(candidates)]
+        let greatest_angle = 0
+        let pairs          = sequentialPairs(hull)
+        
+        pairs.forEach(pair => {
+            let [v, w] = pair
+            
+            candidates.forEach(candidate => {
+                let angle = candidate.to(v).angleWith(candidate.to(w))
+                
+                if (angle > greatest_angle) {
+                    greatest_angle = angle
+                    chosen = [v, candidate]
+                }
+            })
+        })
+        
+        return chosen
+    }
+    
     
     Heuristics.push({
         name: "Grootste Hoek",
         solve(vertices: Vector[]): Vector[] {
-            let hull = convexHull(vertices)
+            let route      = convexHull(vertices)
+            let candidates = complement(vertices, route)
             
+            while (candidates.length > 0) {
+                let [position, item] = findGreatestAngle(route, candidates)
+                insertElementIntoAfter(item, route, position)
+                
+                candidates = complement(vertices, route)
+            }
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            // stub
-            
-            return hull
+            return route
         }
     })
 }

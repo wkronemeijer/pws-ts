@@ -312,4 +312,35 @@ module TSP {
         
         return array[index]
     }
+    
+    /*
+    Input: [1,2,3,4]
+    Output: [[1,2], [2,3], [3,4] (loop ? , [4, 1])]
+    */
+    export function sequentialPairs<T>(array: T[], loop = true): T[][] {
+        let length      = array.length
+        let accumulator = <T[][]>[]
+        
+        for (let i = 0; i < length - 1; i++) {
+            let x = array[i]
+            let y = array[i + 1]
+            
+            accumulator.push([x, y])
+        }
+        
+        if (loop) {
+            let first = array[0]
+            let last  = array[length - 1]
+            accumulator.push([last, first])
+        }
+        
+        return accumulator
+    }
+    
+    
+    export function insertElementIntoAfter<T>(item: T, array: T[], after: T) {
+        let index = array.indexOf(after) + 1
+        array.splice(index, 0, item)
+    }
+    
 }

@@ -275,6 +275,28 @@ var TSP;
         return array[index];
     }
     TSP.randomElementFrom = randomElementFrom;
+    function sequentialPairs(array, loop) {
+        if (loop === void 0) { loop = true; }
+        var length = array.length;
+        var accumulator = [];
+        for (var i = 0; i < length - 1; i++) {
+            var x = array[i];
+            var y = array[i + 1];
+            accumulator.push([x, y]);
+        }
+        if (loop) {
+            var first = array[0];
+            var last = array[length - 1];
+            accumulator.push([last, first]);
+        }
+        return accumulator;
+    }
+    TSP.sequentialPairs = sequentialPairs;
+    function insertElementIntoAfter(item, array, after) {
+        var index = array.indexOf(after) + 1;
+        array.splice(index, 0, item);
+    }
+    TSP.insertElementIntoAfter = insertElementIntoAfter;
 })(TSP || (TSP = {}));
 /// <reference path="../tsp.ts"/>
 var TSP;
@@ -497,11 +519,33 @@ var TSP;
         }
         return accumulator;
     }
+    function findGreatestAngle(hull, candidates) {
+        var chosen = [hull[0], TSP.randomElementFrom(candidates)];
+        var greatest_angle = 0;
+        var pairs = TSP.sequentialPairs(hull);
+        pairs.forEach(function (pair) {
+            var v = pair[0], w = pair[1];
+            candidates.forEach(function (candidate) {
+                var angle = candidate.to(v).angleWith(candidate.to(w));
+                if (angle > greatest_angle) {
+                    greatest_angle = angle;
+                    chosen = [v, candidate];
+                }
+            });
+        });
+        return chosen;
+    }
     TSP.Heuristics.push({
         name: "Grootste Hoek",
         solve: function (vertices) {
-            var hull = convexHull(vertices);
-            return hull;
+            var route = convexHull(vertices);
+            var candidates = TSP.complement(vertices, route);
+            while (candidates.length > 0) {
+                var _a = findGreatestAngle(route, candidates), position = _a[0], item = _a[1];
+                TSP.insertElementIntoAfter(item, route, position);
+                candidates = TSP.complement(vertices, route);
+            }
+            return route;
         }
     });
 })(TSP || (TSP = {}));

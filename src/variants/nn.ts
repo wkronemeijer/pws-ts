@@ -8,7 +8,7 @@ module TSP {
         name: "Naaste Buur",
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, pool: Vector[]): Vector {
-                let lengths  = pool.map(match => vertex.to(match).lengthSquared)
+                let lengths  = pool.map(match => vertex.to(match).length)
                 let shortest = Math.min.apply(null, lengths)
                 let index    = lengths.indexOf(shortest)
                 

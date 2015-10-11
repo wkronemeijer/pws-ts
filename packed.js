@@ -6,14 +6,6 @@ var TSP;
             this.x = x;
             this.y = y;
         }
-        Object.defineProperty(Vector.prototype, "lengthSquared", {
-            get: function () {
-                var _a = this, x = _a.x, y = _a.y;
-                return x * x + y * y;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Vector.prototype, "copy", {
             get: function () {
                 return new Vector(this.x, this.y);
@@ -23,7 +15,8 @@ var TSP;
         });
         Object.defineProperty(Vector.prototype, "length", {
             get: function () {
-                return Math.sqrt(this.lengthSquared);
+                var _a = this, x = _a.x, y = _a.y;
+                return Math.sqrt(x * x + y * y);
             },
             enumerable: true,
             configurable: true
@@ -48,8 +41,6 @@ var TSP;
             return this.angleWith(point) * Math.sign(point.y * this.x - point.x * this.y);
         };
         Vector.origin = new Vector(0, 0);
-        Vector.e_x = new Vector(1, 0);
-        Vector.e_y = new Vector(0, 1);
         return Vector;
     })();
     TSP.Vector = Vector;
@@ -60,9 +51,8 @@ var TSP;
         }
         Circle.prototype.contains = function (point) {
             var _a = this, center = _a.center, radius = _a.radius;
-            var relative = center.to(point);
-            var radiusSquared = radius * radius;
-            return relative.lengthSquared < radiusSquared;
+            var relative_length = center.to(point).length;
+            return relative_length < radius;
         };
         Circle.prototype.toString = function () {
             var _a = this, center = _a.center, radius = _a.radius;
@@ -558,7 +548,7 @@ var TSP;
         name: "Naaste Buur",
         solve: function (vertices) {
             function findNearest(vertex, pool) {
-                var lengths = pool.map(function (match) { return vertex.to(match).lengthSquared; });
+                var lengths = pool.map(function (match) { return vertex.to(match).length; });
                 var shortest = Math.min.apply(null, lengths);
                 var index = lengths.indexOf(shortest);
                 return pool[index];
@@ -609,7 +599,7 @@ var TSP;
                         return null;
                     }
                 }
-                var lengths = matches.map(function (match) { return vertex.to(match).lengthSquared; });
+                var lengths = matches.map(function (match) { return vertex.to(match).length; });
                 var shortest = Math.min.apply(null, lengths);
                 var index = lengths.indexOf(shortest);
                 return matches[index];

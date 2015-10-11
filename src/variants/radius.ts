@@ -27,7 +27,7 @@ module TSP {
                     if (radius >= stop) {return null}
                 }
                 
-                let lengths  = matches.map(match => vertex.to(match).lengthSquared)
+                let lengths  = matches.map(match => vertex.to(match).length)
                 let shortest = Math.min.apply(null, lengths)
                 let index    = lengths.indexOf(shortest)
                 

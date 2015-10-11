@@ -11,21 +11,15 @@ module TSP {
         constructor(public x: number, public y: number) {}
         
         static origin = new Vector(0, 0);
-        static e_x = new Vector(1, 0);
-        static e_y = new Vector(0, 1);
         
-        
-        get lengthSquared(): number {
-            let {x, y} = this
-            return x*x + y*y
-        }
         
         get copy() {
             return new Vector(this.x, this.y)
         }
         
         get length(): number {
-            return Math.sqrt(this.lengthSquared)
+            let {x, y} = this
+            return Math.sqrt(x*x + y*y)
         }
         
         
@@ -53,7 +47,7 @@ module TSP {
         
         /**Clockwise is negative, counterclockwise is positive */
         signedAngleWith(point: Vector): number {
-            return this.angleWith(point) * Math.sign(point.y * this.x - point.x * this.y )
+            return this.angleWith(point) * Math.sign(point.y * this.x - point.x * this.y )  // negated determinant matrix
         }
     }
     
@@ -63,11 +57,9 @@ module TSP {
         
         contains(point: Vector) {
             let {center, radius} = this
+            let relative_length  = center.to(point).length
             
-            let relative      = center.to(point)
-            let radiusSquared = radius * radius
-            
-            return relative.lengthSquared < radiusSquared
+            return relative_length < radius
         }
         
         

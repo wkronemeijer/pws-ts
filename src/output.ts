@@ -5,15 +5,15 @@ module TSP {
     
     
     export interface DisplayParameters {
-        path: Path
-        context: CanvasRenderingContext2D
-        dimensions: Size
-        edgeWidth?: number
-        vertexSize?: number
+        path: Path;
+        context: CanvasRenderingContext2D;
+        dimensions: Size;
+        edgeWidth?: number;
+        vertexSize?: number;
     }
     
     
-    let τ = 2 * Math.PI
+    let tau = 2 * Math.PI;
     
     
     export function display(parameters: DisplayParameters) {
@@ -23,27 +23,31 @@ module TSP {
             dimensions: {width, height}, 
             edgeWidth  = 2, 
             vertexSize = 5,
-        } = parameters
+        } = parameters;
         
-        let {closed} = path
+        let {closed} = path;
         
         window.requestAnimationFrame(() => {
-            ctx.clearRect(0, 0, width, height)
+            ctx.clearRect(0, 0, width, height);
             
             if (edgeWidth > 0) {
-                ctx.lineWidth = edgeWidth
-                ctx.beginPath()
-                path.vertices.forEach((vertex) => ctx.lineTo(vertex.x, vertex.y))
-                if (closed) {ctx.closePath()}
-                ctx.stroke()
+                ctx.lineWidth = edgeWidth;
+                ctx.beginPath();
+                path.vertices.forEach((vertex) => ctx.lineTo(vertex.x, vertex.y));
+                
+                if (closed) {
+                    ctx.closePath();
+                }
+                
+                ctx.stroke();
             }
             
             if (vertexSize > 0) {
-                path.vertices.forEach((vertex) => {
-                    ctx.beginPath()
-                    ctx.arc(vertex.x, vertex.y, vertexSize, 0, τ)
-                    ctx.closePath()
-                    ctx.fill()
+                path.vertices.forEach((vertex) => {;
+                    ctx.beginPath();
+                    ctx.arc(vertex.x, vertex.y, vertexSize, 0, tau);
+                    ctx.closePath();
+                    ctx.fill();
                 })
             }
         })

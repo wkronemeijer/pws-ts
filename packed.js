@@ -208,7 +208,7 @@ var TSP;
     TSP.randomVertices = randomVertices;
     function parseIntSafe(s, default_) {
         if (default_ === void 0) { default_ = 0; }
-        var x = parseInt(s);
+        var x = parseInt(s.trim());
         return isNaN(x) ? default_ : x;
     }
     TSP.parseIntSafe = parseIntSafe;
@@ -290,7 +290,7 @@ var TSP;
 var TSP;
 (function (TSP) {
     "use strict";
-    var τ = 2 * Math.PI;
+    var tau = 2 * Math.PI;
     function display(parameters) {
         var path = parameters.path, ctx = parameters.context, _a = parameters.dimensions, width = _a.width, height = _a.height, _b = parameters.edgeWidth, edgeWidth = _b === void 0 ? 2 : _b, _c = parameters.vertexSize, vertexSize = _c === void 0 ? 5 : _c;
         var closed = path.closed;
@@ -307,8 +307,9 @@ var TSP;
             }
             if (vertexSize > 0) {
                 path.vertices.forEach(function (vertex) {
+                    ;
                     ctx.beginPath();
-                    ctx.arc(vertex.x, vertex.y, vertexSize, 0, τ);
+                    ctx.arc(vertex.x, vertex.y, vertexSize, 0, tau);
                     ctx.closePath();
                     ctx.fill();
                 });

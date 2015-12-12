@@ -3,30 +3,29 @@
 module TSP {
     "use strict"
     
-    
     Heuristics.push({
         name: "Naaste Buur",
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, pool: Vector[]): Vector {
-                let lengths  = pool.map(match => vertex.to(match).length)
-                let shortest = Math.min.apply(null, lengths)
-                let index    = lengths.indexOf(shortest)
+                let lengths  = pool.map(match => vertex.to(match).length);
+                let shortest = Math.min.apply(null, lengths);
+                let index    = lengths.indexOf(shortest);
                 
-                return pool[index]
+                return pool[index];
             }
             
-            let ordered   = [vertices[0]]
-            let unordered = vertices.slice(1)
+            let route   = [vertices[0]];
+            let remaining = vertices.slice(1);
             
-            while (unordered.length !== 0) {
-                let current = ordered[0]
-                let nearest = findNearest(current, unordered)
+            while (remaining.length > 0) {
+                let current = lastOf(route);
+                let nearest = findNearest(current, remaining);
                 
-                ordered.unshift(nearest)
-                deleteFrom(unordered, nearest)
+                route.push(nearest);
+                deleteFrom(remaining, nearest);
             }
             
-            return ordered.reverse()
+            return route
         }
     })
 }

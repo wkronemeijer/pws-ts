@@ -3,55 +3,54 @@
 module TSP {
     "use strict"
     
-    
     Heuristics.push({
         name: "Straal",
         solve(vertices: Vector[]): Vector[] {
             function findNearest(vertex: Vector, pool: Vector[]): Vector {
-                let start = 1
-                let stop  = 2 * 1000
-                let step  = stop / 10
+                let start = 1;
+                let stop  = 2 * 1000;
+                let step  = stop / 10;
                 
-                let radius  = start
-                let matches = <Vector[]>[]
+                let radius  = start;
+                let matches = new Array<Vector>();
                 
                 while (matches.length === 0) {
-                    var circle = new Circle(vertex, radius)
+                    var circle = new Circle(vertex, radius);
                     pool.forEach((remainingVertex) => {
                         if (circle.contains(remainingVertex)) {
-                            matches.push(remainingVertex)
+                            matches.push(remainingVertex);
                         }
-                    })
+                    });
                     
-                    radius += step
+                    radius += step;
                     if (radius >= stop) {return null}
                 }
                 
-                let lengths  = matches.map(match => vertex.to(match).length)
-                let shortest = Math.min.apply(null, lengths)
-                let index    = lengths.indexOf(shortest)
+                let lengths  = matches.map(match => vertex.to(match).length);
+                let shortest = Math.min.apply(null, lengths);
+                let index    = lengths.indexOf(shortest);
                 
-                return matches[index]
+                return matches[index];
             }
             
-            let result    = <Vector[]>[]
-            var current   = vertices[0]
-            var remaining = vertices.slice(1)
+            let result    = new Array<Vector>();
+            var current   = vertices[0];
+            var remaining = vertices.slice(1);
             
-            result.push(current)
-            while (remaining.length !== 0) {
-                let nearest = findNearest(current, remaining)
+            result.push(current);
+            while (remaining.length > 0) {
+                let nearest = findNearest(current, remaining);
                 if (nearest === null) {
-                    break
+                    break;
                 }
                 
-                result.push(nearest)
+                result.push(nearest);
                 
-                current = nearest
-                remaining = removeFrom(remaining, nearest)
+                current = nearest;
+                remaining = removeFrom(remaining, nearest);
             }
             
-            return result
+            return result;
         }
     })
 }

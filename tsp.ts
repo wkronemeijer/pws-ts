@@ -12,11 +12,8 @@
 /// <reference path="./src/opt-variants/none.ts"/>
 /// <reference path="./src/opt-variants/2-opt.ts"/>
 
-
-
 module TSP {
     "use strict"
-    
     
     let controller = new Controller({
         dimensions: Size.default,
@@ -37,7 +34,7 @@ module TSP {
         optimizationPicker: <HTMLSelectElement>  document.getElementById("OptPicker"),
         calculateButton:    <HTMLButtonElement>  document.getElementById("Calculate"),
         testCount:          <HTMLInputElement>   document.getElementById("TestCount"),
-    })
+    });
     
-    controller.updatePreview()
+    controller.updatePreview();
 }

@@ -54,7 +54,7 @@ var TSP;
             return relative_length < radius;
         };
         Circle.prototype.toString = function () {
-            return "(" + this.center + ", " + this.radius + ")";
+            return "Circle(" + this.center + ", " + this.radius + ")";
         };
         return Circle;
     })();
@@ -65,7 +65,7 @@ var TSP;
             this.height = height;
         }
         Size.prototype.toString = function () {
-            return "(" + this.width + ", " + this.height + ")";
+            return "Size(" + this.width + ", " + this.height + ")";
         };
         Size.default = Object.freeze(new Size(1000, 1000));
         return Size;
@@ -94,7 +94,7 @@ var TSP;
         return {
             algorithm: algo,
             path: new Path(solved),
-            time: after - before
+            time: after - before,
         };
     }
     TSP.performTest = performTest;
@@ -141,10 +141,6 @@ var TSP;
         var index = array.indexOf(item);
         if (index !== -1) {
             array.splice(index, 1);
-            return true;
-        }
-        else {
-            return false;
         }
     }
     TSP.deleteFrom = deleteFrom;
@@ -169,7 +165,7 @@ var TSP;
     }
     TSP.average = average;
     function median(samples) {
-        var array = samples.slice().sort();
+        var array = samples.slice().sort(function (a, b) { return a - b; });
         var length = array.length;
         if (length % 2 === 1) {
             return array[(length - 1) / 2];
@@ -226,13 +222,14 @@ var TSP;
     }
     TSP.clip = clip;
     TSP.maxLineLength = 160;
-    function swap(array, index0, index1) {
-        var accumulator = array.slice();
-        _a = [accumulator[index0], accumulator[index1]], accumulator[index1] = _a[0], accumulator[index0] = _a[1];
-        return accumulator;
-        var _a;
+    function swapIndices(array, index0, index1) {
+        var base = new Array();
+        var left = array.slice(0, index0);
+        var middle = array.slice(index0, index1).reverse();
+        var right = array.slice(index1);
+        return base.concat(left, middle, right);
     }
-    TSP.swap = swap;
+    TSP.swapIndices = swapIndices;
     function totalLength(vertices, closed) {
         if (closed === void 0) { closed = true; }
         var accumulator = 0;
@@ -265,7 +262,7 @@ var TSP;
     function sequentialPairs(array, loop) {
         if (loop === void 0) { loop = true; }
         var length = array.length;
-        var accumulator = [];
+        var accumulator = new Array();
         for (var i = 0; i < length - 1; i++) {
             var x = array[i];
             var y = array[i + 1];
@@ -284,6 +281,10 @@ var TSP;
         array.splice(index, 0, item);
     }
     TSP.insertElementIntoAfter = insertElementIntoAfter;
+    function lastOf(array) {
+        return array[array.length - 1];
+    }
+    TSP.lastOf = lastOf;
 })(TSP || (TSP = {}));
 /// <reference path="../tsp.ts"/>
 var TSP;
@@ -317,11 +318,11 @@ var TSP;
     TSP.display = display;
 })(TSP || (TSP = {}));
 /// <reference path="./common.ts"/>
-/// <reference path="/usr/local/lib/node_modules/typescript/bin/lib.es6.d.ts"/>
+/// <reference path="/usr/local/lib/node_modules/typescript/lib/lib.es6.d.ts"/>
 var TSP;
 (function (TSP) {
     "use strict";
-    TSP.storageKey = 'yolo';
+    TSP.storageKey = 'pws-ts';
     var Controller = (function () {
         function Controller(parameters) {
             this.outlets = parameters;
@@ -370,6 +371,7 @@ var TSP;
             var vertices = TSP.randomVertices(count);
             var pairs = vertices.map(function (vertex) { return [Math.round(vertex.x), Math.round(vertex.y)]; });
             fiddleArea.value = JSON.stringify(pairs, null, 4);
+            this.updatePreview();
         };
         Controller.prototype.saveFiddle = function () {
             window.localStorage.setItem(TSP.storageKey, this.outlets.fiddleArea.value);
@@ -433,8 +435,8 @@ var TSP;
                 var optimizer = TSP.Optimizers.filter(function (opt) { return opt.name === optimizationPicker.value; })[0];
                 var count = TSP.parseIntSafe(testCount.value, 1);
                 var vertices = this.vertices;
-                var results = [];
-                var opt_results = [];
+                var results = new Array();
+                var opt_results = new Array();
                 this.iconicPath = TSP.performTest(algorithm, vertices).path;
                 this.optimizedPath = TSP.performTest(optimizer, this.iconicPath.vertices).path;
                 TSP.rangeTo(count).forEach(function (i) {
@@ -491,8 +493,8 @@ var TSP;
     }
     function convexHull(vertices) {
         var x_vertices = vertices.map(function (vertex) { return vertex.x; });
-        var minimum_x = Math.min.apply(Math, x_vertices);
-        var start = vertices[x_vertices.indexOf(minimum_x)];
+        var smallest_x = Math.min.apply(Math, x_vertices);
+        var start = vertices[x_vertices.indexOf(smallest_x)];
         var accumulator = [start];
         while (true) {
             var cursor = accumulator[accumulator.length - 1];
@@ -551,15 +553,15 @@ var TSP;
                 var index = lengths.indexOf(shortest);
                 return pool[index];
             }
-            var ordered = [vertices[0]];
-            var unordered = vertices.slice(1);
-            while (unordered.length !== 0) {
-                var current = ordered[0];
-                var nearest = findNearest(current, unordered);
-                ordered.unshift(nearest);
-                TSP.deleteFrom(unordered, nearest);
+            var route = [vertices[0]];
+            var remaining = vertices.slice(1);
+            while (remaining.length > 0) {
+                var current = TSP.lastOf(route);
+                var nearest = findNearest(current, remaining);
+                route.push(nearest);
+                TSP.deleteFrom(remaining, nearest);
             }
-            return ordered.reverse();
+            return route;
         }
     });
 })(TSP || (TSP = {}));
@@ -584,7 +586,7 @@ var TSP;
                 var stop = 2 * 1000;
                 var step = stop / 10;
                 var radius = start;
-                var matches = [];
+                var matches = new Array();
                 while (matches.length === 0) {
                     var circle = new TSP.Circle(vertex, radius);
                     pool.forEach(function (remainingVertex) {
@@ -602,11 +604,11 @@ var TSP;
                 var index = lengths.indexOf(shortest);
                 return matches[index];
             }
-            var result = [];
+            var result = new Array();
             var current = vertices[0];
             var remaining = vertices.slice(1);
             result.push(current);
-            while (remaining.length !== 0) {
+            while (remaining.length > 0) {
                 var nearest = findNearest(current, remaining);
                 if (nearest === null) {
                     break;
@@ -642,7 +644,7 @@ var TSP;
                 stale = true;
                 for (var i = 0; i < length; i++) {
                     for (var j = i + 1; j < length; j++) {
-                        var new_route = [].concat(best_route.slice(0, i), best_route.slice(i, j).reverse(), best_route.slice(j));
+                        var new_route = TSP.swapIndices(best_route, i, j);
                         var before = TSP.totalLength(best_route);
                         var after = TSP.totalLength(new_route);
                         if (after < before) {

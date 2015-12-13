@@ -8,11 +8,11 @@ module TSP {
         solve(vertices: Vector[]): Vector[] {
             let length     = vertices.length;
             let best_route = vertices.slice();
-            let stale = true;
+            let optimal = false;
             
             again:
             do {
-                stale = true
+                optimal = true;
                 
                 for (let i = 0; i < length; i++ ) {
                     for (let j = i + 1; j < length; j++) {
@@ -23,12 +23,12 @@ module TSP {
                         
                         if (after < before) {
                             best_route = new_route;
-                            stale = false;
+                            optimal = false;
                             continue again;
                         }
                     }
                 }
-            } while (!stale)
+            } while (!optimal)
             
             return best_route;
         }

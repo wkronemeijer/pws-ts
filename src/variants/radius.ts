@@ -23,7 +23,9 @@ module TSP {
                     });
                     
                     radius += step;
-                    if (radius >= stop) {return null}
+                    if (radius >= stop) {
+                        return null;
+                    }
                 }
                 
                 let lengths  = matches.map(match => vertex.to(match).length);

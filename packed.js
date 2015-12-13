@@ -324,6 +324,7 @@ var TSP;
 (function (TSP) {
     "use strict";
     TSP.storageKey = 'pws-ts';
+    TSP.firstTime = true;
     var Controller = (function () {
         function Controller(parameters) {
             this.outlets = parameters;
@@ -381,6 +382,10 @@ var TSP;
             var value = window.localStorage.getItem(TSP.storageKey);
             if (value) {
                 this.outlets.fiddleArea.value = value;
+                TSP.firstTime = false;
+            }
+            else {
+                TSP.firstTime = true;
             }
         };
         Controller.prototype.importContentFromFile = function () {
@@ -414,7 +419,12 @@ var TSP;
                 error = true;
             }
             if (error) {
-                importError.innerText = 'Malformed input';
+                if (TSP.firstTime) {
+                    TSP.firstTime = false;
+                }
+                else {
+                    importError.innerText = 'Malformed input';
+                }
             }
             else {
                 importError.innerText = '';

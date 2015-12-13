@@ -34,6 +34,7 @@ module TSP {
     
     
     export let storageKey = 'pws-ts';
+    export let firstTime = true;
     
     
     export class Controller {
@@ -126,6 +127,9 @@ module TSP {
             let value = window.localStorage.getItem(storageKey);
             if (value) {
                 this.outlets.fiddleArea.value = value;
+                firstTime = false;
+            } else {
+                firstTime = true;
             }
         }
         
@@ -167,7 +171,11 @@ module TSP {
             }
             
             if (error) {
-                importError.innerText = 'Malformed input';
+                if (firstTime) {
+                    firstTime = false;
+                } else {
+                    importError.innerText = 'Malformed input';
+                }
             } else {
                 importError.innerText = '';
                 this.saveFiddle();
